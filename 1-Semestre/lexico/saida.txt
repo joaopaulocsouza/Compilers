@@ -1,0 +1,4 @@
+
+error:lexical:5:2: @
+SWITCH
+IF

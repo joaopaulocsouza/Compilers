@@ -1,0 +1,122 @@
+; LL(1)
+ok S -> Programa $
+ok Programa -> algoritmo identifcador ; BlocoVariaveis ProcedimentoFuncao BlocoComandos .
+
+ProcedimentoFuncao -> DeclaraProcedimento ProcedimentoFuncao
+ProcedimentoFuncao -> DeclaraFuncao ProcedimentoFuncao
+ProcedimentoFuncao ->  
+
+DeclaraProcedimento -> procedimento identifcador Parametros ; DeclaraParametro BlocoVariaveis BlocoComandos ;
+
+DeclaraFuncao -> funcao identifcador Parametros : TipoBasico ; DeclaraParametros BlocoVariaveis BLocoComandos;
+
+Parametros -> ( DeclaraIdentificador )
+Parametros ->
+
+DeclaraParametros -> Declaracoes
+DeclaraParametros ->
+
+ok BlocoVariaveis -> variaveis Declaracoes
+ok BlocoVariaveis ->
+
+ok Declaracoes -> tipo identifcador = VetorMatriz [ Dimensao ] TipoBasico; Declaracoes'
+ok Declaracoes -> DeclaraVariaveis Declaracoes'
+ok Declaracoes' -> Declaracoes Declaracoes'
+ok Declaracoes' -> 
+
+ok DeclaraVariaveis -> TipoBasico : DeclaraIdentificador;
+ok DeclaraIdentificador -> identifcador DeclaraIdentificador'
+ok DeclaraIdentificador' -> , DeclaraIdentificador DeclaraIdentificador'
+ok DeclaraIdentificador' ->
+
+ok VetorMatriz -> vetor
+ok VetorMatriz -> matriz
+
+ok Dimensao -> numero_inteiro : numero_inteiro Dimensao'
+ok Dimensao' -> , Dimensao
+ok Dimensao' -> 
+
+ok TipoBasico -> inteiro
+ok TipoBasico -> real
+ok TipoBasico -> caractere
+ok TipoBasico -> logico
+ok TipoBasico -> identifcador
+
+BlocoComandos -> inicio ListaComandos fim
+
+ok ListaComandos -> Comandos ; ListaComandos'
+ok ListaComandos' -> ListaComandos ListaComandos'
+ok ListaComandos' -> 
+
+Comandos -> identifcador Comandos'
+Comandos -> Variavel <- Expressao
+Comandos -> se Expressao entao ListaComandos; Comandos'
+Comandos -> enquanto Expressao faca ListaComandos fim enquanto
+Comandos -> para identifcador de Expressao ate Expressao Comandos'
+Comandos -> repita ListaComandos ate Expressao
+Comandos -> leia ( Variavel )
+Comandos -> imprima ( ExprIter )
+
+Comandos' -> faca ListaComandos fim para
+Comandos' -> passo Expressao faca
+Comandos' -> fim se
+Comandos' -> senao ListaComandos fim se
+Comandos' -> ( ExprIter ) 
+Comandos' ->
+
+Comandos -> identifcador Comandos'
+Comandos -> Variavel <- Expressao
+Comandos -> se Expressao entao ListaComandos
+Comandos -> enquanto Expressao faca ListaComandos fim enquanto
+Comandos -> para identifcador de Expressao ate Expressao Comandos'
+Comandos -> repita ListaComandos ate Expressao
+Comandos -> leia ( Variavel )
+comandos -> imprima ( ExprIter )
+Comandos' ->
+Comandos' -> ( ExprIter ) Comandos'
+Comandos' -> fim se Comandos'
+Comandos' -> senao ListaComandos fim se Comandos'
+Comandos' -> faca ListaComandos fim para Comandos'
+Comandos' -> passo Expressao faca ListaComandos fim para Comandos'
+
+Expressao -> ExpressaoSimples Expressao'
+Expressao' -> = ExpressaoSimples Expressao'
+Expressao' -> <> ExpressaoSimples Expressao'
+Expressao' -> < ExpressaoSimples Expressao'
+Expressao' -> <= ExpressaoSimples Expressao'
+Expressao' -> >= ExpressaoSimples Expressao'
+Expressao' -> > ExpressaoSimples Expressao'
+Expressao' ->
+
+ExpressaoSimples -> Termo ExpressaoSimples'
+ExpressaoSimples -> + Termo ExpressaoSimples'
+ExpressaoSimples -> - Termo ExpressaoSimples'
+ExpressaoSimples' -> + Termo ExpressaoSimples'
+ExpressaoSimples' -> - Termo ExpressaoSimples'
+ExpressaoSimples' -> OU Termo ExpressaoSimples'
+ExpressaoSimples' -> 
+
+Termo -> Fator Termo'
+Termo' -> * Fator Termo'
+Termo' -> / Fator Termo'
+Termo' -> DIV Fator Termo'
+Termo' -> E Fator Termo'
+Termo' -> 
+
+Fator -> ( Expressao )
+Fator -> NAO Fator
+Fator -> numero_inteiro
+Fator -> numero_real
+Fator -> verdadeiro
+Fator -> falso
+Fator -> string
+Fator -> identifcador ( ExprIter )
+Fator -> Variavel
+
+ok Variavel -> identifcador Variavel'
+ok Variavel' -> [ ExprIter ]
+ok Variavel' -> 
+
+ok ExprIter -> Expressao ExprItem'
+ok ExprIter' -> , ExprIter
+ok ExprIter' ->

@@ -1,0 +1,83 @@
+167,172d166
+< DIV
+< MULTIPLY
+< MINUS
+< NUM_INTEGER(00)
+< MULTIPLY
+< DIV
+175,180d168
+< DIV
+< MULTIPLY
+< PLUS
+< NUM_INTEGER(48)
+< MULTIPLY
+< DIV
+188,221c176,181
+< DIV
+< MULTIPLY
+< DIV
+< MULTIPLY
+< IDENTIFIER(comentario)
+< DIV
+< MULTIPLY
+< DIV
+< MULTIPLY
+< DIV
+< MULTIPLY
+< DIV
+< MULTIPLY
+< IF
+< L_PAREN
+< IDENTIFIER(a)
+< GREATER_THAN
+< IDENTIFIER(b)
+< R_PAREN
+< L_CURLY_BRACKET
+< IDENTIFIER(identificador)
+< ASSIGN
+< IDENTIFIER(a)
+< GREATER_THAN
+< IDENTIFIER(b)
+< SEMICOLON
+< IDENTIFIER(i)
+< ASSIGN
+< NUM_INTEGER(666)
+< SEMICOLON
+< R_CURLY_BRACKET
+< DIV
+< MULTIPLY
+< IDENTIFIER(comentario)
+---
+> warning:43:1: '/*' within block comment
+> warning:47:6: '/*' within block comment
+> warning:47:10: '/*' within block comment
+> warning:47:14: '/*' within block comment
+> warning:48:6: '/*' within block comment
+> warning:58:4: '/*' within block comment
+236,241d195
+< DIV
+< MULTIPLY
+< DIV
+< DIV
+< MULTIPLY
+< DIV
+425,439c379
+< DIV
+< MULTIPLY
+< IDENTIFIER(oi)
+< MULTIPLY
+< DIV
+< DIV
+< MULTIPLY
+< IDENTIFIER(isto)
+< IDENTIFIER(eh)
+< IDENTIFIER(um)
+< IDENTIFIER(comentario)
+< IDENTIFIER(iniciado)
+< IDENTIFIER(e)
+< IDENTIFIER(nao)
+< IDENTIFIER(terminado)
+\ Nenhum caractere de nova linha no final do arquivo
+---
+> error:lexical:127:11: unterminated comment
+\ Nenhum caractere de nova linha no final do arquivo

@@ -1,0 +1,1 @@
+ERRO DE SINTAXE. Linha: 184 Coluna: 10 -> 'vet'
