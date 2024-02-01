@@ -1,7 +1,9 @@
 %option noyywrap
 %{
-#include <stdio.h>
-#include <stdbool.h>
+    #include <stdio.h>
+    #include <stdbool.h>
+    #include <stdlib.h>
+    #include "dcmat.tab.h"
 %}
 
 %%
@@ -15,7 +17,7 @@
 "(" return L_PAREN;
 ")" return R_PAREN;
 ":=" return ASSIGN;
-":" return INTERVAL;
+":" return COLON;
 "[" return L_SQUARE_BRACKET;
 "]" return R_SQUARE_BRACKET;
 ";" return SEMICOLON;
@@ -45,8 +47,8 @@
 "reset" return RESET;
 "rpn" return RPN;
 "sen" return SEN;
-"set" return SET;
 "settings" return SETTINGS;
+"set" return SET;
 "show" return SHOW;
 "solve" return SOLVE;
 "sum" return SUM;
@@ -54,16 +56,14 @@
 "tan" return TAN;
 "v_view" return V_VIEW;
 
-[0-9]+ return INT;
-[0-9]+"."[0-9]+ return REAL;
+[-+]?[0-9]+"."[0-9]+ {yylval.floatValue = atof(yytext); return REAL;}
+[-+]?[0-9]+ {yylval.integerValue = atoi(yytext);  return INT;}
 [a-zA-Z]+[0-9a-zA-Z]* return IDENTIFIER;
+"\n" return EOL;
+"\0" return EOL;
+[ ] {};
+"\t" {};
 
-. printf("Invalid Symbol: %s", yytext);
+. {printf("Invalid Symbol: %s", yytext); return 0;}
 
 %%
-
-
-int main(){
-    yylex();
-    return 0;
-}

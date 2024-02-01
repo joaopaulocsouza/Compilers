@@ -1,0 +1,37 @@
+#include "dcmat.hpp"
+#include <iostream>
+#include <iomanip>
+
+float h_view_lo = -2.500000;
+float h_view_hi = 6.500000;
+float v_view_lo = -3.500000;
+float v_view_hi = 3.500000;
+int precision = 6;
+int integral_steps = 1000;
+bool Axis = true;
+bool Erase_Plot = true;
+
+DCMAT::DCMAT(){}
+
+void DCMAT::ShowSettings(){
+    std::cout << "\nh_view_lo: " << std::fixed << std::setprecision(precision) << h_view_lo << "\nh_view_hi: " << h_view_hi;
+    std::cout << "\nv_view_lo: " << v_view_lo << "\nv_view_hi: "  << v_view_hi;
+    std::cout << "\nfloat precision: " << precision << "\nintegral_steps: " << integral_steps;
+
+
+    Axis?std::cout << "\n\nDraw Axis: " << "ON":std::cout << "\n\nDraw Axis: " << "OFF";
+    Erase_Plot?std::cout << "\nErase Plot: " << "ON":std::cout << "\nErase Plot: " << "OFF";
+    std::cout << "\n";
+};
+
+
+void DCMAT::ResetSettings(){
+    h_view_lo = -6.500000;
+    h_view_hi = 6.500000;
+    v_view_lo = -3.500000;
+    v_view_hi = 3.500000;
+    precision = 6;
+    integral_steps = 1000;
+    Axis = true;
+    Erase_Plot = true;
+};

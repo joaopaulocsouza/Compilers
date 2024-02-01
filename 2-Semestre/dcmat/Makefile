@@ -1,15 +1,30 @@
-FLEX=flex
-CC=gcc
-CFLAGS=
-LIBS=
+# Makefile para compilar analisador léxico e sintático
 
-PROGRAMA = dcmat
-LEXICO = lexico.l
+# Nome do analisador léxico (Flex)
+LEX_FILE = dcmat.l
 
-$(PROGRAMA): $(LEXICO)
-	$(FLEX) $(LEXICO)
-	$(CC) lex.yy.c $(LIBS) -o $(PROGRAMA)
+# Nome do analisador sintático (Bison)
+YACC_FILE = dcmat.y
+
+# Nome do arquivo de saída
+OUTPUT_FILE = dcmat
+
+# Nome do arquivo fonte C++
+CPP_FILE = dcmat.cpp
+
+# Nome do arquivo de header C++
+HEADER_FILE = dcmat.hpp
+
+all: $(OUTPUT_FILE)
+
+$(OUTPUT_FILE): lex.yy.c dcmat.tab.c $(CPP_FILE)
+	g++ -std=c99 -o $(OUTPUT_FILE) lex.yy.c dcmat.tab.c $(CPP_FILE) -I. -lfl -lstdc++
+
+lex.yy.c: $(LEX_FILE)
+	flex $(LEX_FILE)
+
+dcmat.tab.c: $(YACC_FILE)
+	bison -d $(YACC_FILE)
 
 clean:
-	rm -f lex.yy.c
-	rm -f dcmat.exe dcmat
+	rm -f *.yy.c *.tab.c *.tab.h $(OUTPUT_FILE)
