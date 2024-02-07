@@ -4,6 +4,8 @@
     #include <stdbool.h>
     #include <stdlib.h>
     #include "dcmat.tab.h"
+
+    extern bool isLexico;
 %}
 
 %%
@@ -16,6 +18,7 @@
 "%" return REST;
 "(" return L_PAREN;
 ")" return R_PAREN;
+"=" return EQUAL;
 ":=" return ASSIGN;
 ":" return COLON;
 "[" return L_SQUARE_BRACKET;
@@ -56,14 +59,14 @@
 "tan" return TAN;
 "v_view" return V_VIEW;
 
-[-+]?[0-9]+"."[0-9]+ {yylval.floatValue = atof(yytext); return REAL;}
-[-+]?[0-9]+ {yylval.integerValue = atoi(yytext);  return INT;}
-[a-zA-Z]+[0-9a-zA-Z]* return IDENTIFIER;
+[0-9]+"."[0-9]+ {yylval.floatValue = atof(yytext); return REAL;}
+[0-9]+ {yylval.integerValue = atoi(yytext);  return INT;}
+[a-zA-Z]+[0-9a-zA-Z]* {yylval.stringValue = strdup(yytext); return IDENTIFIER;}
 "\n" return EOL;
 "\0" return EOL;
 [ ] {};
 "\t" {};
 
-. {printf("Invalid Symbol: %s", yytext); return 0;}
+. {printf("Invalid Symbol: %s\na", yytext); isLexico = true; return 0;}
 
 %%

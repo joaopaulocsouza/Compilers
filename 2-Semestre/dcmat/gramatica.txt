@@ -1,18 +1,46 @@
-SHOW SETTINGS;
-RESET SETTINGS;
-QUIT
+Dcmat -> Command EOL
+        | Att EOL
+        | QUIT EOL
+        | EOL
 
-SET H_VIEW SetView*
-SET V_VIEW SetView*
-SetView* -> FLOAT COLON FLOAT SEMICOLON
+Command -> SET SetLinha
+           | SHOW ShowLinha
+           | RESET SETTINGS SEMICOLON
+           | PLOT SEMICOLON
+           | PLOT L_PAREN Funcao R_PAREN SEMICOLON
+           | RPN L_PAREN Expressao R_PAREN SEMICOLON
+           | INTEGRATE L_PAREN Value COLON VALUE COMMA Funcao R_PAREN SEMICOLON
+           | SUM L_PAREN VAR COMMA Value COLON Value COMMA Expressao R_PAREN SEMICOLON
+           | MATRIX EQUAL L_SQUARE_BRACKET L_SQUARE_BRACKET Value MatrixLinha R_SQUARE_BRACKET R_SQUARE_BRACKET SEMICOLON
+           | SOLVE SolveLinha
 
-SET AXIS ON SEMICOLON | SET AXIS OFF SEMICOLON
+MatrixEstrela -> COMMA L_SQUARE_BRACKET Value MatrixLinha R_SQUARE_BRACKET
+                 | ɛ
 
-PLOT Plot* SEMICOLON
+MatrixLinha -> COMMA Value MatrixLinha
+               | ɛ
+            
+SolveLinha -> DETERMINANT SEMICOLON
+              | LINEAR_SYSTEM SEMICOLON
 
-Plot* -> λ | L_PAREN FUNCAO R_PAREN SEMICOLON
+ShowLinha -> SETTINGS SEMICOLON
+            | MATRIX SEMICOLON
 
-SET ERASE PLOT OFF SEMICOLON
-SET ERASE PLOT ON SEMICOLON
+SetLinha -> H_VIEW Value COLON Value SEMICOLON
+           | V_VIEW Value COLON Value SEMICOLON
+           | AXIS Bool SEMICOLON
+           | ERASE PLOT Bool SEMICOLON
+           | INTEGRAL_STEPS INT SEMICOLON
 
-RPN L_PAREN Expressao R_PAREN SEMICOLON //Notação polonesa inversa
+Att: IDENTIFIER ASSIGN Expressao SEMICOLON
+
+Bool -> ON | OFF
+
+Value -> INT | REAL
+
+Funcao: SEN 
+        | COS
+        | TAN
+        | ABS
+
+Expressao -> Termo

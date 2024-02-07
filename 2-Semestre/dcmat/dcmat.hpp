@@ -6,7 +6,7 @@ class DCMAT {
         DCMAT();
         void ShowSettings();
         void ResetSettings();
-        
+        void CreateHashItem(char *name, float value);
 };
 
 #endif

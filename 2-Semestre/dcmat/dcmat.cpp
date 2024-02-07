@@ -1,4 +1,5 @@
 #include "dcmat.hpp"
+#include "includes.hpp"
 #include <iostream>
 #include <iomanip>
 
@@ -10,6 +11,14 @@ int precision = 6;
 int integral_steps = 1000;
 bool Axis = true;
 bool Erase_Plot = true;
+
+
+struct HashElement {
+    std::string name;
+    float value;
+};
+
+std::vector<HashElement> hash[211];
 
 DCMAT::DCMAT(){}
 
@@ -24,7 +33,6 @@ void DCMAT::ShowSettings(){
     std::cout << "\n";
 };
 
-
 void DCMAT::ResetSettings(){
     h_view_lo = -6.500000;
     h_view_hi = 6.500000;
@@ -34,4 +42,24 @@ void DCMAT::ResetSettings(){
     integral_steps = 1000;
     Axis = true;
     Erase_Plot = true;
+};
+
+//Hash
+
+void DCMAT::CreateHashItem(char *name, float value){
+    int ascii = 0;
+    for(int i = 0; i < std::strlen(name);i++) ascii += int(name[i]);
+    ascii = ascii % 211;
+
+    if(hash[ascii].size() > 0){
+       for(int i = 0; i < hash[ascii].size(); i++){
+            if(hash[ascii][i].name == name){
+                hash[ascii][i].value = value;
+                return;
+            }
+       };
+       hash[ascii].push_back({name: name, value: value});
+    }else{
+        hash[ascii].push_back({name: name, value: value});
+    }
 };
