@@ -9,5 +9,8 @@
 #include <stack>
 #include <string>
 #include <cstring>
+#include <math.h>
+#include <cstdlib>
+#include <cmath>
 
 #endif

@@ -18,7 +18,7 @@ HEADER_FILE = dcmat.hpp
 all: $(OUTPUT_FILE)
 
 $(OUTPUT_FILE): lex.yy.c dcmat.tab.c $(CPP_FILE)
-	g++ -std=c99 -o $(OUTPUT_FILE) lex.yy.c dcmat.tab.c $(CPP_FILE) -I. -lfl -lstdc++
+	g++ -o $(OUTPUT_FILE) lex.yy.c dcmat.tab.c $(CPP_FILE) -I. -lfl -lstdc++
 
 lex.yy.c: $(LEX_FILE)
 	flex $(LEX_FILE)

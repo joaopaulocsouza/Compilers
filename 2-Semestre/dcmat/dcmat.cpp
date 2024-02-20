@@ -12,9 +12,16 @@ int integral_steps = 1000;
 bool Axis = true;
 bool Erase_Plot = true;
 
+struct Variable {
+    std::string name;
+    std::string type;
+    std::string value;
+};
+
 
 struct HashElement {
     std::string name;
+    std::string type;
     float value;
 };
 
@@ -61,5 +68,35 @@ void DCMAT::CreateHashItem(char *name, float value){
        hash[ascii].push_back({name: name, value: value});
     }else{
         hash[ascii].push_back({name: name, value: value});
+    }
+};
+
+DeclaredVar DCMAT::FindHashItem(char *name){
+    int ascii = 0;
+    for(int i = 0; i < std::strlen(name);i++) ascii += int(name[i]);
+    ascii = ascii % 211;
+    DeclaredVar result;
+
+    if(hash[ascii].size() > 0){
+        for(int i = 0; i < hash[ascii].size(); i++){
+            if(hash[ascii][i].name == name){
+                result.exists = true;
+                result.value = hash[ascii][i].value;
+                return result;
+            }
+       };
+    }
+
+    result.exists = false;
+    return result;
+};
+
+void DCMAT::ShowSymbols(){
+    for(int i=0;i<211;i++){
+        if(hash[i].size() > 0){
+            for(int j = 0; j < hash[i].size() ; j++){
+                std::cout << hash[i][j].name << " - ";
+            }
+        }
     }
 };

@@ -1,12 +1,11 @@
 %{
     #include "dcmat.hpp"
+    #include "includes.hpp"
     #include <dcmat.tab.h>
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
-    #include <stdbool.h>
 
     DCMAT dcmat;
+
+    DeclaredVar result;
 
     extern float h_view_lo;
     extern float h_view_hi;
@@ -17,12 +16,15 @@
     extern bool Axis;
     extern bool Erase_Plot;
 
+    float euler = 2.71828182;
+    float pi = 3.14159265;
+
     bool isLexico = false;
     extern int yylex();
     extern char* yytext;
     extern int yychar;
     extern int yyleng;
-    void yyerror(char *s);
+    void yyerror(const void *s);
 %}
 
 %union{
@@ -84,10 +86,18 @@
 %token <stringValue>IDENTIFIER;
 %token EOL;
 
-%type <floatValue>Num;
+%type <integerValue>NumInt;
+%type <floatValue>NumFloat;
 %type <floatValue>Value;
 %type <boolValue>Bool;
 %type <floatValue>Expressao;
+%type <floatValue>ExpressaoRest;
+%type <floatValue>ExpressaoPow;
+%type <floatValue>Termo;
+%type <floatValue>ExpressaoSub;
+%type <floatValue>ExpressaoAdd;
+%type <floatValue>ExpressaoDiv;
+%type <floatValue>ExpressaoMult;
 
 %start Dcmat;
 
@@ -97,7 +107,8 @@ Dcmat: EOL {return 0;}
     | QUIT EOL {exit(0);}
     | Command EOL {return 0;}
 
-Command: SHOW SETTINGS SEMICOLON {dcmat.ShowSettings();}
+Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
+    | SHOW SETTINGS SEMICOLON {dcmat.ShowSettings();}
     | RESET SETTINGS SEMICOLON {dcmat.ResetSettings();}
     | ABOUT SEMICOLON {
         printf("+----------------------------------------------+\n");
@@ -108,9 +119,20 @@ Command: SHOW SETTINGS SEMICOLON {dcmat.ShowSettings();}
         printf("+----------------------------------------------+\n\n");
     }
     | SET Set;
+    | IDENTIFIER SEMICOLON {
+        result = dcmat.FindHashItem($1);
+        if(result.exists){
+            printf("%s = %.*f\n", $1, precision, result.value);
+        }else{
+            std::cout << "Undefined symbol\n";
+        }
+    }
     | IDENTIFIER ASSIGN Expressao SEMICOLON {
         dcmat.CreateHashItem($1, $3);
-    };
+    }
+    | MATRIX EQUAL L_SQUARE_BRACKET R_PAREN SEMICOLON;
+    | Expressao { std::cout << $1 << "\n";}
+
 
 Set: FLOAT PRECISION INT[value] SEMICOLON {
         if($value <= 8 && $value >= 0){
@@ -123,13 +145,17 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
             if($2 < $4){
                 h_view_lo = $2;
                 h_view_hi = $4;
-            } 
+            } else{
+                printf("ERROR: h_view_lo must be smaller than h_view_hi\n");
+            }
         };
     | V_VIEW Value COLON Value SEMICOLON { 
             if($2 < $4){
                 v_view_lo = $2;
                 v_view_hi = $4;
-            } 
+            }else{
+                printf("ERROR: v_view_lo must be smaller than v_view_hi\n");
+            }
         };
     | AXIS Bool SEMICOLON {
             Axis = $2;
@@ -141,17 +167,57 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
             integral_steps = $2;
         };
 
-Expressao: Num {$$ = $1;};
-    
-Value: Num { $$ = $1;};
-    | ADD Num {$$ = $2;} ; 
-    | SUBTRACT Num { $$ = -$2;} ; 
+
+Expressao: ExpressaoSub {$$ = $1;};
+
+ExpressaoSub: Termo SUBTRACT Expressao {$$ = $1 - $3;};
+              | ExpressaoAdd {$$ = $1;}
+            
+ExpressaoAdd: Termo ADD Expressao {$$ = $1 + $3;};
+              | ExpressaoMult {$$ = $1;}
+
+ExpressaoDiv: Termo DIV Expressao {$$ = $1 * $3;};
+              | ExpressaoMult {$$ = $1;}
+
+ExpressaoMult: Termo MULTIPLY Expressao {$$ = $1 * $3;};
+               | ExpressaoRest {$$ = $1;}
+
+ExpressaoRest: Termo REST Expressao {$$ = $1 / $3;};
+               | ExpressaoPow {$$ = $1;}
+
+ExpressaoPow: Termo POW Expressao {$$ =  pow($1, $3);};
+               | Termo {$$ = $1;}
 
 
-Num:  REAL {
+Termo:  L_PAREN Expressao R_PAREN {$$ = $2;};
+        | IDENTIFIER {
+            result = dcmat.FindHashItem($1);
+            if(result.exists){
+               $$ = result.value;
+            }else{
+                std::cout << "Undefined symbol [" << $1 << "]\n";
+            }};
+        | PI {$$ = pi;};
+        | E {$$ = euler;}; 
+        | Value {$$ = $1;};
+        | SEN L_PAREN Expressao R_PAREN {$$ = sin($3);}
+        | COS L_PAREN Expressao R_PAREN {$$ = cos($3);}
+        | TAN L_PAREN Expressao R_PAREN {$$ = tan($3);}
+        | ABS L_PAREN Expressao R_PAREN {$$ = abs($3);}
+
+Value: NumInt { $$ = $1;};
+    | ADD NumInt {$$ = $2;} ; 
+    | SUBTRACT NumInt { $$ = -$2;} ; 
+    | NumFloat { $$ = $1;};
+    | ADD NumFloat {$$ = $2;} ; 
+    | SUBTRACT NumFloat { $$ = -$2;} ; 
+
+
+NumInt: INT   {
             $$ = $1;
         };
-    | INT   {
+
+NumFloat: REAL {
             $$ = $1;
         };
 
@@ -165,15 +231,15 @@ Bool: ON {
 %%
 
 void expectedDelaration(){
-    printf("SYNTAX ERROR: Incomplete Command\n");
+     std::cout << "SYNTAX ERROR: Incomplete Command\n";
     return;
 }
 
 void syntaxError(){
-    printf("SYNTAX ERROR: [%s]\n", yytext);
+    std::cout << "SYNTAX ERROR: " << yytext << "\n";
 }
 
-void yyerror(char *s) {
+void yyerror(const void *s) {
 
     if(!isLexico){
         (yychar == 0)?expectedDelaration():syntaxError(); 

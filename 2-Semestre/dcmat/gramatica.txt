@@ -43,4 +43,26 @@ Funcao: SEN
         | TAN
         | ABS
 
-Expressao -> Termo
+Expressao ->  Termo ExpressaoLinha;
+              | + Termo ExpressaoLinha;
+              | - Termo ExpressaoLinha;
+              | * Termo ExpressaoLinha;
+              | / Termo ExpressaoLinha;
+              | % Termo ExpressaoLinha;
+              
+
+ExpressaoLinha -> + Fator ExpressaoLinha;
+              | - Fator ExpressaoLinha;
+              | * Fator ExpressaoLinha;
+              | / Fator ExpressaoLinha;
+              | % Fator ExpressaoLinha;
+              | ;
+
+Fator -> ( Expressao )
+         | INTEIRO
+         | REAL
+         | IDENTIFICADOR
+
+Termo -> INT
+        | FLOAT
+        | IDENTIFIER

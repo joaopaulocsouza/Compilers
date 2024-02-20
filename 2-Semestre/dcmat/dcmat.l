@@ -4,6 +4,7 @@
     #include <stdbool.h>
     #include <stdlib.h>
     #include "dcmat.tab.h"
+    #include "includes.hpp"
 
     extern bool isLexico;
 %}
@@ -67,6 +68,6 @@
 [ ] {};
 "\t" {};
 
-. {printf("Invalid Symbol: %s\na", yytext); isLexico = true; return 0;}
+. {std::cout << "Invalid Symbol: " << yytext << "\n"; isLexico = true;}
 
 %%
