@@ -4,6 +4,7 @@
     #include <dcmat.tab.h>
 
     DCMAT dcmat;
+    Expressao expressao;
 
     DeclaredVar result;
 
@@ -27,11 +28,16 @@
     void yyerror(const void *s);
 %}
 
+%code requires {
+    class Expressao;
+}
+
 %union{
     int integerValue;
     float floatValue;
     bool boolValue;
     char *stringValue;
+    Expressao *expValue;
 }
 
 %token ADD;
@@ -88,16 +94,16 @@
 
 %type <integerValue>NumInt;
 %type <floatValue>NumFloat;
-%type <floatValue>Value;
+%type <expValue>Value;
 %type <boolValue>Bool;
-%type <floatValue>Expressao;
-%type <floatValue>ExpressaoRest;
-%type <floatValue>ExpressaoPow;
-%type <floatValue>Termo;
-%type <floatValue>ExpressaoSub;
-%type <floatValue>ExpressaoAdd;
-%type <floatValue>ExpressaoDiv;
-%type <floatValue>ExpressaoMult;
+%type <expValue>Expressao;
+%type <expValue>ExpressaoRest;
+%type <expValue>ExpressaoPow;
+%type <expValue>Termo;
+%type <expValue>ExpressaoSub;
+%type <expValue>ExpressaoAdd;
+%type <expValue>ExpressaoDiv;
+%type <expValue>ExpressaoMult;
 
 %start Dcmat;
 
@@ -122,16 +128,21 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | IDENTIFIER SEMICOLON {
         result = dcmat.FindHashItem($1);
         if(result.exists){
-            printf("%s = %.*f\n", $1, precision, result.value);
+            if(result.type == "INT"){
+                std::cout << $1 << " " << result.value->value << "\n";
+            }else if(result.type == "FLOAT"){
+                printf("%s = %.*f\n", $1, precision, result.value->value);
+            }
         }else{
             std::cout << "Undefined symbol\n";
         }
     }
     | IDENTIFIER ASSIGN Expressao SEMICOLON {
-        dcmat.CreateHashItem($1, $3);
+         Expressao *exp = $3;
+         dcmat.CreateHashItem($1, exp, exp->type);
     }
     | MATRIX EQUAL L_SQUARE_BRACKET R_PAREN SEMICOLON;
-    | Expressao { std::cout << $1 << "\n";}
+    | Expressao { Expressao *exp = $1;  if(!exp->function)std::cout << exp->value << "\n"; if(exp->function)std::cout << "É uma função";}
 
 
 Set: FLOAT PRECISION INT[value] SEMICOLON {
@@ -142,17 +153,23 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
         }
         };
     | H_VIEW Value COLON Value SEMICOLON { 
-            if($2 < $4){
-                h_view_lo = $2;
-                h_view_hi = $4;
+            Expressao *exp1, *exp2;
+            exp1 = static_cast<Expressao*>($2);
+            exp2 = static_cast<Expressao*>($4);
+            if(exp1->value < exp2->value){
+                h_view_lo = exp1->value ;
+                h_view_hi = exp2->value ;
             } else{
                 printf("ERROR: h_view_lo must be smaller than h_view_hi\n");
             }
         };
     | V_VIEW Value COLON Value SEMICOLON { 
-            if($2 < $4){
-                v_view_lo = $2;
-                v_view_hi = $4;
+            Expressao *exp1, *exp2;
+            exp1 = static_cast<Expressao*>($2);
+            exp2 = static_cast<Expressao*>($4);
+            if(exp1->value < exp2->value){
+                v_view_lo = exp1->value;
+                v_view_hi = exp2->value;
             }else{
                 printf("ERROR: v_view_lo must be smaller than v_view_hi\n");
             }
@@ -170,63 +187,124 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
 
 Expressao: ExpressaoSub {$$ = $1;};
 
-ExpressaoSub: Termo SUBTRACT Expressao {$$ = $1 - $3;};
+ExpressaoSub: Termo SUBTRACT Expressao {
+                Expressao *exp = new Expressao(); 
+                exp->type = "SUB"; exp->left = $1; exp->right = $3; exp->value = exp->left->value - exp->right->value;
+                $$ = exp; if($1->function || $3->function){ exp->function = true;};
+            };
               | ExpressaoAdd {$$ = $1;}
             
-ExpressaoAdd: Termo ADD Expressao {$$ = $1 + $3;};
+ExpressaoAdd: Termo ADD Expressao {
+                Expressao *exp = new Expressao(); 
+                exp->type = "ADD"; exp->left = $1; exp->right = $3; exp->value = exp->left->value + exp->right->value;
+                 if($1->function || $3->function){ exp->function = true;}; $$ = exp;
+            };
+              | ExpressaoDiv {$$ = $1;}
+
+ExpressaoDiv: Termo DIV Expressao {
+                Expressao *exp = new Expressao(); 
+                exp->type = "DIV"; exp->left = $1; exp->right = $3; exp->value = exp->left->value / exp->right->value;
+                if($1->function || $3->function){ exp->function = true;}; $$ = exp; 
+            };
               | ExpressaoMult {$$ = $1;}
 
-ExpressaoDiv: Termo DIV Expressao {$$ = $1 * $3;};
-              | ExpressaoMult {$$ = $1;}
-
-ExpressaoMult: Termo MULTIPLY Expressao {$$ = $1 * $3;};
+ExpressaoMult: Termo MULTIPLY Expressao {
+                Expressao *exp = new Expressao(); 
+                exp->type = "MULTIPLY"; exp->left = $1; exp->right = $3; exp->value = exp->left->value * exp->right->value;
+                if($1->function || $3->function){ exp->function = true;}; $$ = exp; 
+            };
                | ExpressaoRest {$$ = $1;}
 
-ExpressaoRest: Termo REST Expressao {$$ = $1 / $3;};
+ExpressaoRest: Termo REST Expressao {
+                Expressao *exp = new Expressao(); 
+                exp->type = "REST"; exp->left = $1; exp->right = $3;  exp->value = dcmat.CalcRest(exp->left->value, exp->right->value);
+                if($1->function || $3->function){ exp->function = true;}; $$ = exp; 
+            };
                | ExpressaoPow {$$ = $1;}
 
-ExpressaoPow: Termo POW Expressao {$$ =  pow($1, $3);};
+ExpressaoPow: Termo POW Expressao {
+                Expressao *exp = new Expressao(); if($1->type == "FLOAT" || $3->type=="FLOAT"){exp->type = "FLOAT"; }else{
+                    exp->type = "INT";
+                };
+                exp->oper = "POW"; exp->left = $1; exp->right = $3; exp->value = pow(exp->left->value, exp->right->value);
+                if($1->function || $3->function){ exp->function = true;}; $$ = exp; 
+            };
                | Termo {$$ = $1;}
 
 
-Termo:  L_PAREN Expressao R_PAREN {$$ = $2;};
-        | IDENTIFIER {
+Termo: IDENTIFIER {
             result = dcmat.FindHashItem($1);
             if(result.exists){
                $$ = result.value;
             }else{
                 std::cout << "Undefined symbol [" << $1 << "]\n";
             }};
-        | PI {$$ = pi;};
-        | E {$$ = euler;}; 
+        | PI {
+                Expressao *exp = new Expressao(); exp->value = pi; 
+                exp->type = "FLOAT"; exp->oper = "OPERANDO";
+                $$ = exp;
+            };
+        | E  { Expressao *exp = new Expressao(); exp->value = euler; 
+                exp->type = "FLOAT"; exp->oper = "OPERANDO";
+                $$ = exp;
+            } ;
         | Value {$$ = $1;};
-        | SEN L_PAREN Expressao R_PAREN {$$ = sin($3);}
-        | COS L_PAREN Expressao R_PAREN {$$ = cos($3);}
-        | TAN L_PAREN Expressao R_PAREN {$$ = tan($3);}
-        | ABS L_PAREN Expressao R_PAREN {$$ = abs($3);}
+        | SEN L_PAREN Expressao R_PAREN {
+                Expressao *exp = new Expressao(); exp->exp = $3; exp->type = $3->type;
+                exp->oper = "SEN"; exp->function = $3->function; exp->value = sin($3->value);
+                $$ = exp; 
+            }
+        | COS L_PAREN Expressao R_PAREN  {
+                Expressao *exp = new Expressao(); exp->exp = $3; exp->type = $3->type;
+                exp->oper = "COS"; exp->function = $3->function; exp->value = cos($3->value);
+                $$ = exp;
+            }
+        | TAN L_PAREN Expressao R_PAREN  {
+                Expressao *exp = new Expressao(); exp->exp = $3; exp->type = $3->type;
+                exp->oper = "TAN"; exp->function = $3->function;  exp->value = tan($3->value);
+                $$ = exp;
+            }
+        | ABS L_PAREN Expressao R_PAREN  {
+                Expressao *exp = new Expressao(); exp->exp = $3; exp->type = $3->type;
+                exp->oper = "ABS"; exp->function = $3->function; exp->value = abs($3->value);
+                $$ = exp;
+            }
 
-Value: NumInt { $$ = $1;};
-    | ADD NumInt {$$ = $2;} ; 
-    | SUBTRACT NumInt { $$ = -$2;} ; 
-    | NumFloat { $$ = $1;};
-    | ADD NumFloat {$$ = $2;} ; 
-    | SUBTRACT NumFloat { $$ = -$2;} ; 
+Value: NumInt {  Expressao *exp = new Expressao(); exp->value = $1; exp->oper = "OPERANDO";
+                exp->type = "INT"; $$ = exp;
+                };
+    | ADD NumInt {Expressao *exp = new Expressao(); exp->value = $2; exp->oper = "OPERANDO";
+                    exp->type = "INT";  $$ = exp;
+                }; 
+    | SUBTRACT NumInt {Expressao *exp = new Expressao(); exp->value = -$2; exp->oper = "OPERANDO";
+                    exp->type = "INT";  $$ = exp;
+                }; 
+    | NumFloat {Expressao *exp = new Expressao(); exp->value = $1; exp->oper = "OPERANDO";
+                    exp->type = "FLOAT";  $$ = exp;
+                };
+    | ADD NumFloat {Expressao *exp = new Expressao(); exp->value = $2; exp->oper = "OPERANDO";
+                    exp->type = "FLOAT";  $$ = exp;
+                };
+    | SUBTRACT NumFloat {Expressao *exp = new Expressao(); exp->value = -$2; exp->oper = "OPERANDO";
+                    exp->type = "FLOAT";  $$ = exp;
+                }; 
+    | L_PAREN Expressao R_PAREN {$$ = $2;};
+    | SUBTRACT L_PAREN Expressao R_PAREN {$3->value = -$3->value; $$ =$3; };
+    | ADD L_PAREN Expressao R_PAREN {$$ =$3; };
+    | VAR {Expressao *exp = new Expressao(); exp->function = true; exp->type = "VAR"; $$ = exp;}
+    | SUBTRACT VAR {Expressao *exp = new Expressao(); exp->function = true; exp->type = "SUBVAR"; $$ = exp;}
+    | ADD VAR {Expressao *exp = new Expressao(); exp->function = true; exp->type = "VAR"; $$ = exp;}
+
 
 
 NumInt: INT   {
             $$ = $1;
         };
 
-NumFloat: REAL {
-            $$ = $1;
-        };
+NumFloat: REAL { $$ = $1; };
 
-Bool: ON {
-                $$ = true;
-            }; 
-        | OFF {
-            $$ = false;
-        };
+Bool: ON { $$ = true; }; 
+    | OFF { $$ = false; };
 
 %%
 

@@ -12,17 +12,12 @@ int integral_steps = 1000;
 bool Axis = true;
 bool Erase_Plot = true;
 
-struct Variable {
-    std::string name;
-    std::string type;
-    std::string value;
-};
 
 
 struct HashElement {
     std::string name;
+    Expressao *value;
     std::string type;
-    float value;
 };
 
 std::vector<HashElement> hash[211];
@@ -53,7 +48,7 @@ void DCMAT::ResetSettings(){
 
 //Hash
 
-void DCMAT::CreateHashItem(char *name, float value){
+void DCMAT::CreateHashItem(char *name, Expressao *exp, std::string type){
     int ascii = 0;
     for(int i = 0; i < std::strlen(name);i++) ascii += int(name[i]);
     ascii = ascii % 211;
@@ -61,13 +56,13 @@ void DCMAT::CreateHashItem(char *name, float value){
     if(hash[ascii].size() > 0){
        for(int i = 0; i < hash[ascii].size(); i++){
             if(hash[ascii][i].name == name){
-                hash[ascii][i].value = value;
+                hash[ascii][i].value = exp;
                 return;
             }
        };
-       hash[ascii].push_back({name: name, value: value});
+       hash[ascii].push_back({name: name, value: exp, type: type});
     }else{
-        hash[ascii].push_back({name: name, value: value});
+        hash[ascii].push_back({name: name, value: exp, type: type});
     }
 };
 
@@ -82,6 +77,7 @@ DeclaredVar DCMAT::FindHashItem(char *name){
             if(hash[ascii][i].name == name){
                 result.exists = true;
                 result.value = hash[ascii][i].value;
+                result.type = hash[ascii][i].type;
                 return result;
             }
        };
@@ -95,7 +91,7 @@ void DCMAT::ShowSymbols(){
     for(int i=0;i<211;i++){
         if(hash[i].size() > 0){
             for(int j = 0; j < hash[i].size() ; j++){
-                std::cout << hash[i][j].name << " - ";
+                std::cout << hash[i][j].name << " - " << hash[i][j].type << "\n";
             }
         }
     }

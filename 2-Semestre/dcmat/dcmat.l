@@ -62,7 +62,7 @@
 
 [0-9]+"."[0-9]+ {yylval.floatValue = atof(yytext); return REAL;}
 [0-9]+ {yylval.integerValue = atoi(yytext);  return INT;}
-[a-zA-Z]+[0-9a-zA-Z]* {yylval.stringValue = strdup(yytext); return IDENTIFIER;}
+[a-zA-Z]+[_0-9a-zA-Z]* {yylval.stringValue = strdup(yytext); return IDENTIFIER;}
 "\n" return EOL;
 "\0" return EOL;
 [ ] {};
