@@ -15,6 +15,8 @@ CPP_FILE = dcmat.cpp
 # Nome do arquivo de header C++
 HEADER_FILE = dcmat.hpp
 
+AST_HEADER_FILE = ast.hpp
+
 all: $(OUTPUT_FILE)
 
 $(OUTPUT_FILE): lex.yy.c dcmat.tab.c $(CPP_FILE)

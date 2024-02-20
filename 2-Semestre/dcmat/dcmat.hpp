@@ -6,7 +6,7 @@
 struct DeclaredVar {
     bool exists;
     Expressao *value;
-    std::string type;
+    int type;
 };
 
 class DCMAT {
@@ -14,7 +14,7 @@ class DCMAT {
         DCMAT();
         void ShowSettings();
         void ResetSettings();
-        void CreateHashItem(char *name, Expressao *exp, std::string type);
+        void CreateHashItem(char *name, Expressao *exp, int type);
         DeclaredVar FindHashItem(char *name);
         void ShowSymbols();
 

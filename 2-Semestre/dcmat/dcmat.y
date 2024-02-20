@@ -128,9 +128,9 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | IDENTIFIER SEMICOLON {
         result = dcmat.FindHashItem($1);
         if(result.exists){
-            if(result.type == "INT"){
-                std::cout << $1 << " " << result.value->value << "\n";
-            }else if(result.type == "FLOAT"){
+            if(result.type == INT_KEY){
+                std::cout << $1 << " = " << result.value->value << "\n";
+            }else if(result.type == FLOAT_KEY){
                 printf("%s = %.*f\n", $1, precision, result.value->value);
             }
         }else{
@@ -142,7 +142,9 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
          dcmat.CreateHashItem($1, exp, exp->type);
     }
     | MATRIX EQUAL L_SQUARE_BRACKET R_PAREN SEMICOLON;
-    | Expressao { Expressao *exp = $1;  if(!exp->function)std::cout << exp->value << "\n"; if(exp->function)std::cout << "É uma função";}
+    | Expressao { Expressao *exp = $1; 
+        if(exp->element != FUNCTION_KEY){std::cout << std::fixed << std::setprecision(precision) << exp->value << "\n"; }
+        else{ std::cout << "funcao: "<< expressao.CalcFunctionValue(2, exp) << std::endl;}}
 
 
 Set: FLOAT PRECISION INT[value] SEMICOLON {
@@ -187,47 +189,57 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
 
 Expressao: ExpressaoSub {$$ = $1;};
 
-ExpressaoSub: Termo SUBTRACT Expressao {
-                Expressao *exp = new Expressao(); 
-                exp->type = "SUB"; exp->left = $1; exp->right = $3; exp->value = exp->left->value - exp->right->value;
-                $$ = exp; if($1->function || $3->function){ exp->function = true;};
+ExpressaoSub: ExpressaoSub SUBTRACT ExpressaoAdd {
+                Expressao *exp = new Expressao(); if($1->type == FLOAT_KEY || $3->type==FLOAT_KEY){exp->type = FLOAT_KEY; }else{
+                    exp->type = INT_KEY;
+                };
+                exp->oper = SUB_KEY; exp->left = $1; exp->right = $3; exp->value = exp->left->value - exp->right->value;
+                $$ = exp; if($1->element == FUNCTION_KEY || $3->element == FUNCTION_KEY){ exp->element = FUNCTION_KEY;};
             };
               | ExpressaoAdd {$$ = $1;}
             
-ExpressaoAdd: Termo ADD Expressao {
-                Expressao *exp = new Expressao(); 
-                exp->type = "ADD"; exp->left = $1; exp->right = $3; exp->value = exp->left->value + exp->right->value;
-                 if($1->function || $3->function){ exp->function = true;}; $$ = exp;
+ExpressaoAdd: ExpressaoAdd ADD ExpressaoDiv {
+                Expressao *exp = new Expressao(); if($1->type == FLOAT_KEY || $3->type==FLOAT_KEY){exp->type = FLOAT_KEY; }else{
+                    exp->type = INT_KEY;
+                };
+                exp->oper = ADD_KEY; exp->left = $1; exp->right = $3; exp->value = exp->left->value + exp->right->value;
+                 if($1->element == FUNCTION_KEY || $3->element == FUNCTION_KEY){ exp->element = FUNCTION_KEY;}; $$ = exp;
             };
               | ExpressaoDiv {$$ = $1;}
 
-ExpressaoDiv: Termo DIV Expressao {
-                Expressao *exp = new Expressao(); 
-                exp->type = "DIV"; exp->left = $1; exp->right = $3; exp->value = exp->left->value / exp->right->value;
-                if($1->function || $3->function){ exp->function = true;}; $$ = exp; 
+ExpressaoDiv: ExpressaoDiv DIV ExpressaoMult {
+                Expressao *exp = new Expressao(); if($1->type == FLOAT_KEY || $3->type==FLOAT_KEY){exp->type = FLOAT_KEY; }else{
+                    exp->type = INT_KEY;
+                };
+                exp->oper = DIV_KEY; exp->left = $1; exp->right = $3; exp->value = exp->left->value / exp->right->value;
+                if($1->element == FUNCTION_KEY || $3->element == FUNCTION_KEY){ exp->element = FUNCTION_KEY;}; $$ = exp; 
             };
               | ExpressaoMult {$$ = $1;}
 
-ExpressaoMult: Termo MULTIPLY Expressao {
-                Expressao *exp = new Expressao(); 
-                exp->type = "MULTIPLY"; exp->left = $1; exp->right = $3; exp->value = exp->left->value * exp->right->value;
-                if($1->function || $3->function){ exp->function = true;}; $$ = exp; 
+ExpressaoMult: ExpressaoMult MULTIPLY ExpressaoRest {
+                Expressao *exp = new Expressao(); if($1->type == FLOAT_KEY || $3->type==FLOAT_KEY){exp->type = FLOAT_KEY; }else{
+                    exp->type = INT_KEY;
+                };
+                exp->oper = MULTIPLY_KEY; exp->left = $1; exp->right = $3; exp->value = exp->left->value * exp->right->value;
+                if($1->element == FUNCTION_KEY || $3->element == FUNCTION_KEY){ exp->element = FUNCTION_KEY;}; $$ = exp; 
             };
                | ExpressaoRest {$$ = $1;}
 
-ExpressaoRest: Termo REST Expressao {
-                Expressao *exp = new Expressao(); 
-                exp->type = "REST"; exp->left = $1; exp->right = $3;  exp->value = dcmat.CalcRest(exp->left->value, exp->right->value);
-                if($1->function || $3->function){ exp->function = true;}; $$ = exp; 
+ExpressaoRest: ExpressaoRest REST ExpressaoPow {
+                Expressao *exp = new Expressao(); if($1->type == FLOAT_KEY || $3->type==FLOAT_KEY){exp->type = FLOAT_KEY; }else{
+                    exp->type = INT_KEY;
+                };
+                exp->oper = REST_KEY; exp->left = $1; exp->right = $3;  exp->value = dcmat.CalcRest(exp->left->value, exp->right->value);
+                if($1->element == FUNCTION_KEY || $3->element == FUNCTION_KEY){ exp->element = FUNCTION_KEY;}; $$ = exp; 
             };
                | ExpressaoPow {$$ = $1;}
 
-ExpressaoPow: Termo POW Expressao {
-                Expressao *exp = new Expressao(); if($1->type == "FLOAT" || $3->type=="FLOAT"){exp->type = "FLOAT"; }else{
-                    exp->type = "INT";
+ExpressaoPow: ExpressaoPow POW Termo {
+                Expressao *exp = new Expressao(); if($1->type == FLOAT_KEY || $3->type==FLOAT_KEY){exp->type = FLOAT_KEY; }else{
+                    exp->type = INT_KEY;
                 };
-                exp->oper = "POW"; exp->left = $1; exp->right = $3; exp->value = pow(exp->left->value, exp->right->value);
-                if($1->function || $3->function){ exp->function = true;}; $$ = exp; 
+                exp->oper = POW_KEY; exp->left = $1; exp->right = $3; exp->value = pow(exp->left->value, exp->right->value);
+                if($1->element == FUNCTION_KEY || $3->element == FUNCTION_KEY){ exp->element = FUNCTION_KEY;}; $$ = exp; 
             };
                | Termo {$$ = $1;}
 
@@ -241,59 +253,64 @@ Termo: IDENTIFIER {
             }};
         | PI {
                 Expressao *exp = new Expressao(); exp->value = pi; 
-                exp->type = "FLOAT"; exp->oper = "OPERANDO";
-                $$ = exp;
+                exp->type = FLOAT_KEY; exp->oper = OP;
+                exp->left = nullptr; exp->right = nullptr;  $$ = exp;
             };
         | E  { Expressao *exp = new Expressao(); exp->value = euler; 
-                exp->type = "FLOAT"; exp->oper = "OPERANDO";
-                $$ = exp;
+                exp->type = FLOAT_KEY; exp->oper = OP;
+                exp->left = nullptr; exp->right = nullptr;  $$ = exp;
             } ;
         | Value {$$ = $1;};
         | SEN L_PAREN Expressao R_PAREN {
                 Expressao *exp = new Expressao(); exp->exp = $3; exp->type = $3->type;
-                exp->oper = "SEN"; exp->function = $3->function; exp->value = sin($3->value);
-                $$ = exp; 
+                exp->oper = SEN_KEY; exp->element = $3->element; if($3->element != FUNCTION_KEY)exp->value = sin($3->value);
+                exp->left = nullptr; exp->right = nullptr; $$ = exp; 
             }
         | COS L_PAREN Expressao R_PAREN  {
                 Expressao *exp = new Expressao(); exp->exp = $3; exp->type = $3->type;
-                exp->oper = "COS"; exp->function = $3->function; exp->value = cos($3->value);
-                $$ = exp;
+                exp->oper = COS_KEY; exp->element = $3->element; if($3->element != FUNCTION_KEY)exp->value = cos($3->value);
+                exp->left = nullptr; exp->right = nullptr;  $$ = exp;
             }
         | TAN L_PAREN Expressao R_PAREN  {
                 Expressao *exp = new Expressao(); exp->exp = $3; exp->type = $3->type;
-                exp->oper = "TAN"; exp->function = $3->function;  exp->value = tan($3->value);
-                $$ = exp;
+                exp->oper = TAN_KEY; exp->element = $3->element; if($3->element != FUNCTION_KEY)exp->value = tan($3->value);
+                exp->left = nullptr; exp->right = nullptr; $$ = exp;
             }
         | ABS L_PAREN Expressao R_PAREN  {
                 Expressao *exp = new Expressao(); exp->exp = $3; exp->type = $3->type;
-                exp->oper = "ABS"; exp->function = $3->function; exp->value = abs($3->value);
+                exp->oper = ABS_KEY; exp->element = $3->element; if($3->element != FUNCTION_KEY)exp->value = abs($3->value);
+                 exp->left = nullptr; exp->right = nullptr;
                 $$ = exp;
             }
 
-Value: NumInt {  Expressao *exp = new Expressao(); exp->value = $1; exp->oper = "OPERANDO";
-                exp->type = "INT"; $$ = exp;
+Value: NumInt {  Expressao *exp = new Expressao(); exp->value = $1; exp->oper = OP;
+                exp->left = nullptr; exp->right = nullptr;  exp->type = INT_KEY; $$ = exp;
                 };
-    | ADD NumInt {Expressao *exp = new Expressao(); exp->value = $2; exp->oper = "OPERANDO";
-                    exp->type = "INT";  $$ = exp;
+    | ADD NumInt {Expressao *exp = new Expressao(); exp->value = $2; exp->oper = OP;
+                exp->left = nullptr; exp->right = nullptr; exp->type = INT_KEY;  $$ = exp;
                 }; 
-    | SUBTRACT NumInt {Expressao *exp = new Expressao(); exp->value = -$2; exp->oper = "OPERANDO";
-                    exp->type = "INT";  $$ = exp;
+    | SUBTRACT NumInt {Expressao *exp = new Expressao(); exp->value = -$2; exp->oper = OP;
+                  exp->left = nullptr; exp->right = nullptr; exp->type = INT_KEY;  $$ = exp;
                 }; 
-    | NumFloat {Expressao *exp = new Expressao(); exp->value = $1; exp->oper = "OPERANDO";
-                    exp->type = "FLOAT";  $$ = exp;
+    | NumFloat {Expressao *exp = new Expressao(); exp->value = $1; exp->oper = OP;
+                exp->left = nullptr; exp->right = nullptr; exp->type = FLOAT_KEY;  $$ = exp;
                 };
-    | ADD NumFloat {Expressao *exp = new Expressao(); exp->value = $2; exp->oper = "OPERANDO";
-                    exp->type = "FLOAT";  $$ = exp;
+    | ADD NumFloat {Expressao *exp = new Expressao(); exp->value = $2; exp->oper = OP;
+                    exp->type = FLOAT_KEY; exp->left = nullptr; exp->right = nullptr;  $$ = exp;
                 };
-    | SUBTRACT NumFloat {Expressao *exp = new Expressao(); exp->value = -$2; exp->oper = "OPERANDO";
-                    exp->type = "FLOAT";  $$ = exp;
+    | SUBTRACT NumFloat {Expressao *exp = new Expressao(); exp->value = -$2; exp->oper = OP;
+                    exp->type = FLOAT_KEY; exp->left = nullptr; exp->right = nullptr;   $$ = exp;
                 }; 
-    | L_PAREN Expressao R_PAREN {$$ = $2;};
-    | SUBTRACT L_PAREN Expressao R_PAREN {$3->value = -$3->value; $$ =$3; };
-    | ADD L_PAREN Expressao R_PAREN {$$ =$3; };
-    | VAR {Expressao *exp = new Expressao(); exp->function = true; exp->type = "VAR"; $$ = exp;}
-    | SUBTRACT VAR {Expressao *exp = new Expressao(); exp->function = true; exp->type = "SUBVAR"; $$ = exp;}
-    | ADD VAR {Expressao *exp = new Expressao(); exp->function = true; exp->type = "VAR"; $$ = exp;}
+    | L_PAREN Expressao R_PAREN { $$ = $2;};
+    | SUBTRACT L_PAREN Expressao R_PAREN { $3->value = -$3->value; $$ =$3; };
+    | ADD L_PAREN Expressao R_PAREN {$$ = $3; };
+    | VAR {Expressao *exp = new Expressao(); exp->element = FUNCTION_KEY; exp->type = VAR_KEY; exp->oper = OP;
+        exp->left = nullptr; exp->right = nullptr;  $$ = exp;}
+    | SUBTRACT VAR {Expressao *exp = new Expressao(); exp->element = FUNCTION_KEY; exp->type = SUBVAR_KEY; exp->oper = OP;
+        exp->left = nullptr; exp->right = nullptr;  $$ = exp;}
+    | ADD VAR {
+        Expressao *exp = new Expressao(); exp->element = FUNCTION_KEY; exp->type = VAR_KEY; exp->oper = OP;
+        exp->left = nullptr; exp->right = nullptr; $$ = exp;}
 
 
 

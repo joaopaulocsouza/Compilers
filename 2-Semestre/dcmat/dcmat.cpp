@@ -1,7 +1,5 @@
 #include "dcmat.hpp"
 #include "includes.hpp"
-#include <iostream>
-#include <iomanip>
 
 float h_view_lo = -2.500000;
 float h_view_hi = 6.500000;
@@ -17,7 +15,7 @@ bool Erase_Plot = true;
 struct HashElement {
     std::string name;
     Expressao *value;
-    std::string type;
+    int type;
 };
 
 std::vector<HashElement> hash[211];
@@ -48,7 +46,7 @@ void DCMAT::ResetSettings(){
 
 //Hash
 
-void DCMAT::CreateHashItem(char *name, Expressao *exp, std::string type){
+void DCMAT::CreateHashItem(char *name, Expressao *exp, int type){
     int ascii = 0;
     for(int i = 0; i < std::strlen(name);i++) ascii += int(name[i]);
     ascii = ascii % 211;
