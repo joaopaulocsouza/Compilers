@@ -168,24 +168,18 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
             printf("ERROR: float precision must be from 0 to 8\n");
         }
         };
-    | H_VIEW Value COLON Value SEMICOLON { 
-            Expressao *exp1, *exp2;
-            exp1 = static_cast<Expressao*>($2);
-            exp2 = static_cast<Expressao*>($4);
-            if(exp1->value < exp2->value){
-                h_view_lo = exp1->value ;
-                h_view_hi = exp2->value ;
-            } else{
+    | H_VIEW Signal COLON Signal SEMICOLON {
+            if($2->value < $4->value){
+                h_view_lo = $2->value;
+                h_view_hi = $4->value;
+            }else{
                 printf("ERROR: h_view_lo must be smaller than h_view_hi\n");
             }
         };
-    | V_VIEW Value COLON Value SEMICOLON { 
-            Expressao *exp1, *exp2;
-            exp1 = static_cast<Expressao*>($2);
-            exp2 = static_cast<Expressao*>($4);
-            if(exp1->value < exp2->value){
-                v_view_lo = exp1->value;
-                v_view_hi = exp2->value;
+    | V_VIEW Signal COLON Signal SEMICOLON {
+            if($2->value < $4->value){
+                v_view_lo = $2->value;
+                v_view_hi = $4->value;
             }else{
                 printf("ERROR: v_view_lo must be smaller than v_view_hi\n");
             }
@@ -204,26 +198,26 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
 Expressao: ExpressionSumSub {$$ = $1;};
 
 ExpressionSumSub: ExpressionMulDiv ADD ExpressionSumSub {
-                        $$ = dcmat.CreateExp(ADD_KEY, $1, $3);    
+                        $$ = expressao.CreateExp(ADD_KEY, $1, $3);    
                 };
                 | ExpressionMulDiv SUBTRACT ExpressionSumSub {
-                        $$ = dcmat.CreateExp(SUB_KEY, $1, $3);    
+                        $$ = expressao.CreateExp(SUB_KEY, $1, $3);    
                 };
                 | ExpressionMulDiv {$$ = $1;};
 
 ExpressionMulDiv: ExpressionPowRem MULTIPLY ExpressionMulDiv {
-                        $$ = dcmat.CreateExp(MULTIPLY_KEY, $1, $3);    
+                        $$ = expressao.CreateExp(MULTIPLY_KEY, $1, $3);    
                 };
                 | ExpressionPowRem DIV ExpressionMulDiv {
-                        $$ = dcmat.CreateExp(DIV_KEY, $1, $3);    
+                        $$ = expressao.CreateExp(DIV_KEY, $1, $3);    
                 };
                 | ExpressionPowRem {$$ = $1;};
 
 ExpressionPowRem: Signal POW ExpressionPowRem {
-                        $$ = dcmat.CreateExp(POW_KEY, $1, $3);    
+                        $$ = expressao.CreateExp(POW_KEY, $1, $3);    
                 };
                 | Signal REST ExpressionPowRem {
-                        $$ = dcmat.CreateExp(REST, $1, $3);    
+                        $$ = expressao.CreateExp(REST, $1, $3);    
                 };
                 | Signal {$$ = $1;};
 
@@ -246,30 +240,32 @@ Termo: IDENTIFIER {
         | SEN L_PAREN Expressao R_PAREN { 
                 float value = 0;
                 if($3->element != FUNCTION_KEY)value = sin($3->value);
-                $$ = dcmat.CreateSheet($3->type, SEN_KEY, value, $3);
+                $$ = expressao.CreateSheet($3->type, SEN_KEY, value, $3);
             }
         | COS L_PAREN Expressao R_PAREN  { 
                 float value = 0;
                 if($3->element != FUNCTION_KEY) value = cos($3->value);
-                $$ = dcmat.CreateSheet($3->type, COS_KEY, value, $3);
+                $$ = expressao.CreateSheet($3->type, COS_KEY, value, $3);
             }
         | TAN L_PAREN Expressao R_PAREN  { 
                 float value = 0;
                 if($3->element != FUNCTION_KEY) value = tan($3->value);
-                $$ = dcmat.CreateSheet($3->type, TAN_KEY, value, $3);
+                $$ = expressao.CreateSheet($3->type, TAN_KEY, value, $3);
             }
         | ABS L_PAREN Expressao R_PAREN { 
                 float value = 0;
                 if($3->element != FUNCTION_KEY) value = abs($3->value);
-                $$ = dcmat.CreateSheet($3->type, ABS_KEY, value, $3);
+                $$ = expressao.CreateSheet($3->type, ABS_KEY, value, $3);
             }
 
-Value: NumInt { $$ = dcmat.CreateSheet(INT_KEY, OP, $1, nullptr); }; 
-    | NumFloat { $$ = dcmat.CreateSheet(FLOAT_KEY, OP, $1, nullptr); };
-    | L_PAREN Expressao R_PAREN { $$ = $2;};
-    | VAR {$$ = dcmat.CreateSheet(VAR_KEY, OP, 0, nullptr); }
-    | PI { $$ = dcmat.CreateSheet(FLOAT_KEY, OP, pi, nullptr); };
-    | E  { $$ = dcmat.CreateSheet(FLOAT_KEY, OP, euler, nullptr); } ;
+Value: NumInt { $$ = expressao.CreateSheet(INT_KEY, OP, $1, nullptr); }; 
+    | NumFloat { $$ = expressao.CreateSheet(FLOAT_KEY, OP, $1, nullptr); };
+    | L_PAREN Expressao R_PAREN { 
+        int element = $2->element;
+        $$ = expressao.CreateSheet($2->type, EXP_KEY, $2->value, $2, element) ;};
+    | VAR {$$ = expressao.CreateSheet(VAR_KEY, OP, 0, nullptr); }
+    | PI { $$ = expressao.CreateSheet(FLOAT_KEY, OP, pi, nullptr); };
+    | E  { $$ = expressao.CreateSheet(FLOAT_KEY, OP, euler, nullptr); } ;
 
 
 

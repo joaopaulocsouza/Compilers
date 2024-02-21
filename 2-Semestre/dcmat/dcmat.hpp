@@ -17,8 +17,6 @@ class DCMAT {
         void CreateHashItem(char *name, Expressao *exp, int type);
         DeclaredVar FindHashItem(char *name);
         void ShowSymbols();
-        Expressao *CreateExp(int oper, Expressao *termo, Expressao *exp);
-        Expressao *CreateSheet(int type, int oper, float value, Expressao *exp);
 
         void PlotChart(Expressao *exp);
 

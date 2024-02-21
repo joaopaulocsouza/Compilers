@@ -106,68 +106,6 @@ void DCMAT::ShowSymbols(){
     }
 };
 
-Expressao *DCMAT::CreateExp(int oper, Expressao *termo, Expressao *exp){
-    Expressao *new_exp = new Expressao(); 
-    
-    if(termo->type == FLOAT_KEY || exp->type ==FLOAT_KEY){
-        new_exp->type = FLOAT_KEY; 
-    }else{
-        new_exp->type = INT_KEY;
-    };
-            
-    new_exp->oper = oper; 
-    new_exp->left = termo; 
-    new_exp->right = exp;
-    switch (oper) {
-        case ADD_KEY:
-            new_exp->value = termo->value + exp->value;
-            break;
-        case SUB_KEY:
-            new_exp->value = termo->value - exp->value;
-            break;
-        case MULTIPLY_KEY:
-            new_exp->value = termo->value * exp->value;
-            break;
-        case DIV_KEY:
-            new_exp->value = termo->value / exp->value;
-            break;
-        case REST_KEY:
-            new_exp->value = static_cast<int>(termo->value) % static_cast<int>(exp->value);
-            break;
-        case POW_KEY:
-            new_exp->value = pow(termo->value, exp->value);
-            break;
-        
-    }
-    if(termo->element == FUNCTION_KEY || exp->element == FUNCTION_KEY){ 
-        new_exp->element = FUNCTION_KEY;
-    }else{
-        new_exp->element = EXPRESSION_KEY;
-    };
-
-    return new_exp;
-}
-
-
-Expressao *DCMAT::CreateSheet(int type, int oper, float value, Expressao *exp){
-    Expressao *new_exp = new Expressao(); 
-
-    new_exp->oper = oper;
-    new_exp->value = value;
-    new_exp->type = type;
-    new_exp->left = nullptr;
-    new_exp->right = nullptr;
-    new_exp->exp = exp;
-
-    if(type == VAR_KEY || type == SUBVAR_KEY){
-        new_exp->element = FUNCTION_KEY;
-    }else{
-        new_exp->element = EXPRESSION_KEY;
-    }
-
-    return new_exp;
-}
-
 
  double TransformPoint(double y) {
     double new_y = 0+((y - v_view_lo) * 24) / (v_view_hi - v_view_lo);
