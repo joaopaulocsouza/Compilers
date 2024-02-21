@@ -239,23 +239,27 @@ Termo: IDENTIFIER {
         | Value {$$ = $1;};
         | SEN L_PAREN Expressao R_PAREN { 
                 float value = 0;
+                int element = $3->element;
                 if($3->element != FUNCTION_KEY)value = sin($3->value);
-                $$ = expressao.CreateSheet($3->type, SEN_KEY, value, $3);
+                $$ = expressao.CreateSheet($3->type, SEN_KEY, value, $3, element);
             }
         | COS L_PAREN Expressao R_PAREN  { 
                 float value = 0;
+                int element = $3->element;
                 if($3->element != FUNCTION_KEY) value = cos($3->value);
-                $$ = expressao.CreateSheet($3->type, COS_KEY, value, $3);
+                $$ = expressao.CreateSheet($3->type, COS_KEY, value, $3, element);
             }
         | TAN L_PAREN Expressao R_PAREN  { 
                 float value = 0;
+                int element = $3->element;
                 if($3->element != FUNCTION_KEY) value = tan($3->value);
-                $$ = expressao.CreateSheet($3->type, TAN_KEY, value, $3);
+                $$ = expressao.CreateSheet($3->type, TAN_KEY, value, $3, element);
             }
         | ABS L_PAREN Expressao R_PAREN { 
                 float value = 0;
+                int element = $3->element;
                 if($3->element != FUNCTION_KEY) value = abs($3->value);
-                $$ = expressao.CreateSheet($3->type, ABS_KEY, value, $3);
+                $$ = expressao.CreateSheet($3->type, ABS_KEY, value, $3, element);
             }
 
 Value: NumInt { $$ = expressao.CreateSheet(INT_KEY, OP, $1, nullptr); }; 
