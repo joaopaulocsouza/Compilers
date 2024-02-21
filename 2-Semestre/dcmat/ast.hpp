@@ -20,13 +20,13 @@ enum Types {
     VAR_KEY,
     SUBVAR_KEY,
     INT_KEY,
-    FLOAT_KEY
+    FLOAT_KEY,
+    MATRIX_KEY
 };
 
 enum Element {
     FUNCTION_KEY,
-    EXPRESSION_KEY,
-    MATRIX_KEY
+    EXPRESSION_KEY
 };
 
 class Expressao {
@@ -54,7 +54,7 @@ class Expressao {
 
         float CalcFunctionValue(float x, Expressao *exp){
             Expressao *aux = exp;
-            float result = 0;            
+            float result = 0;           
 
             if(aux->right != nullptr){
                 result = CalcFunctionValue(x, aux->right);

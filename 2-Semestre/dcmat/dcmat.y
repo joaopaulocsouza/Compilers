@@ -5,6 +5,7 @@
 
     DCMAT dcmat;
     Expressao expressao;
+    Expressao *function = nullptr; 
 
     DeclaredVar result;
 
@@ -142,7 +143,22 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | MATRIX EQUAL L_SQUARE_BRACKET R_PAREN SEMICOLON;
     | Expressao { Expressao *exp = $1; 
         if(exp->element != FUNCTION_KEY){std::cout << std::fixed << std::setprecision(precision) << exp->value << "\n"; }
-        else{ std::cout << "funcao: "<< expressao.CalcFunctionValue(2, exp) << std::endl;}}
+        else{ std::cout << "funcao: "<< expressao.CalcFunctionValue(5, exp) << std::endl;}}
+    | PLOT L_PAREN Expressao R_PAREN SEMICOLON {
+        if($3->element == FUNCTION_KEY){
+            function = $3;
+            dcmat.PlotChart(function);
+        }else{
+            std::cout << "No Function defined!\n";
+        }
+    };
+    | PLOT SEMICOLON {
+        if(function){
+            dcmat.PlotChart(function);
+        }else{
+            std::cout << "No Function defined!\n";
+        }
+    }
 
 
 Set: FLOAT PRECISION INT[value] SEMICOLON {
@@ -251,7 +267,7 @@ Termo: IDENTIFIER {
 Value: NumInt { $$ = dcmat.CreateSheet(INT_KEY, OP, $1, nullptr); }; 
     | NumFloat { $$ = dcmat.CreateSheet(FLOAT_KEY, OP, $1, nullptr); };
     | L_PAREN Expressao R_PAREN { $$ = $2;};
-    | VAR {$$ = dcmat.CreateSheet(VAR_KEY, OP,0, nullptr); }
+    | VAR {$$ = dcmat.CreateSheet(VAR_KEY, OP, 0, nullptr); }
     | PI { $$ = dcmat.CreateSheet(FLOAT_KEY, OP, pi, nullptr); };
     | E  { $$ = dcmat.CreateSheet(FLOAT_KEY, OP, euler, nullptr); } ;
 

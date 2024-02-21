@@ -1,7 +1,7 @@
 #include "dcmat.hpp"
 #include "includes.hpp"
 
-float h_view_lo = -2.500000;
+float h_view_lo = -6.500000;
 float h_view_hi = 6.500000;
 float v_view_lo = -3.500000;
 float v_view_hi = 3.500000;
@@ -10,7 +10,7 @@ int integral_steps = 1000;
 bool Axis = true;
 bool Erase_Plot = true;
 
-
+char *Chart[25][80];
 
 struct HashElement {
     std::string name;
@@ -85,11 +85,22 @@ DeclaredVar DCMAT::FindHashItem(char *name){
     return result;
 };
 
+std::string GetType(int value){
+    switch (value){
+        case INT_KEY:
+            return "INT";
+        case FLOAT_KEY:
+            return "FLOAT";
+        case MATRIX_KEY:
+            return "MATRIZ";
+    }
+}
+
 void DCMAT::ShowSymbols(){
     for(int i=0;i<211;i++){
         if(hash[i].size() > 0){
             for(int j = 0; j < hash[i].size() ; j++){
-                std::cout << hash[i][j].name << " - " << hash[i][j].type << "\n";
+                std::cout << hash[i][j].name << " - " << GetType(hash[i][j].type) << "\n";
             }
         }
     }
@@ -156,3 +167,57 @@ Expressao *DCMAT::CreateSheet(int type, int oper, float value, Expressao *exp){
 
     return new_exp;
 }
+
+
+ double TransformPoint(double y) {
+    double new_y = 0+((y - v_view_lo) * 24) / (v_view_hi - v_view_lo);
+    return new_y;
+}
+
+void DCMAT::PlotChart(Expressao *exp){
+
+    double h = (h_view_hi - h_view_lo) / 80;
+    double v = (v_view_hi - v_view_lo) / 25;
+
+    if(Erase_Plot){
+        for(int i = 0; i<80;i++){
+            for(int j = 0; j<25;j++){
+                Chart[j][i] = " ";
+            }
+        };
+    };
+
+    if(Axis){
+        for(int j = 0; j<25;j++){
+            Chart[j][40] = "|";
+        };
+        for(int i = 0; i<80;i++){
+            Chart[12][i] = "-";
+        };
+        Chart[12][40] = "*";
+    }else{
+         for(int j = 0; j<25;j++){
+            if(Chart[j][40] == "|") Chart[j][40] = " ";
+        };
+        for(int i = 0; i<80;i++){
+            if(Chart[12][i] == "-") Chart[12][i] = " ";
+        };
+    };
+
+    for(int i = 0; i<80;i++){
+       double y = -exp->CalcFunctionValue(i*h + h_view_lo, exp);
+       auto yTranformed = TransformPoint( y);
+       if(y >= v_view_lo && y <= v_view_hi){
+            Chart[(int)yTranformed][i] = "*";
+       }
+    }
+    
+
+    for(int i = 0; i<25;i++){
+        for(int j = 0; j<80;j++){
+            std::cout << Chart[i][j];
+        }
+        std::cout << std::endl;
+    }
+    
+};
