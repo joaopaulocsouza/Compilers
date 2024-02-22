@@ -181,6 +181,7 @@ class Expressao {
             new_exp->left = nullptr;
             new_exp->right = nullptr;
             new_exp->matrix = matrix;
+            new_exp->element = EXPRESSION_KEY; 
 
             return new_exp;
         }

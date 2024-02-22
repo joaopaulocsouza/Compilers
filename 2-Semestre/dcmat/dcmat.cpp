@@ -85,16 +85,14 @@ DeclaredVar DCMAT::FindHashItem(char *name){
     return result;
 };
 
-std::string GetType(int value){
-    switch (value){
+void GetType(Expressao *value){
+    switch (value->type){
         case INT_KEY:
-            return "INT";
+            std::cout << "INT" << std::endl;
         case FLOAT_KEY:
-            return "FLOAT";
+            std::cout << "FLOAT"  << std::endl;
         case MATRIX_KEY:
-            return "MATRIZ";
-        default:
-            return "TIPO NÃO IDENTIFICADO";
+            std::cout << "MATRIZ [" << value->matrix->lines <<  "][" << value->matrix->columns << "]" << std::endl ;
     }
 }
 
@@ -102,7 +100,8 @@ void DCMAT::ShowSymbols(){
     for(int i=0;i<211;i++){
         if(hash[i].size() > 0){
             for(int j = 0; j < hash[i].size() ; j++){
-                std::cout << hash[i][j].name << " - " << GetType(hash[i][j].type) << "\n";
+                std::cout << hash[i][j].name << " - ";
+                GetType(hash[i][j].value);
             }
         }
     }
@@ -190,7 +189,7 @@ void DCMAT::ShowMatrix(MatrixClass *matrix){
         }
         if(lineSize < result) lineSize = result;
     }
-    lineSize += 1;
+    lineSize -= 1;
     for(int k = 0; k < matrix->columns; k++){
         if(isNegative) lineSize += 1;
     }

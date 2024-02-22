@@ -141,7 +141,10 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | IDENTIFIER SEMICOLON {
         result = dcmat.FindHashItem($1);
         if(result.exists){
-            if(result.type == INT_KEY){
+            if(result.type == MATRIX_KEY){
+                dcmat.ShowMatrix(result.value->matrix);
+            }
+            else if(result.type == INT_KEY){
                 std::cout << $1 << " = " << result.value->value << "\n";
             }else if(result.type == FLOAT_KEY){
                 printf("%s = %.*f\n", $1, precision, result.value->value);
@@ -155,10 +158,11 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
          dcmat.CreateHashItem($1, exp, exp->type);
     }
     | IDENTIFIER ASSIGN Matrix SEMICOLON{
-        // Expressao *exp = expressao.CreateMatrix($3);
-        // dcmat.CreateHashItem($1, exp, MATRIX_KEY);
+        Expressao *exp = expressao.CreateMatrix($3);
+        dcmat.CreateHashItem($1, exp, MATRIX_KEY);
+        dcmat.ShowMatrix($3);
     }
-    | MATRIX EQUAL Matrix {
+    | MATRIX EQUAL Matrix SEMICOLON{
         if($3->lines > 10 || $3->columns > 10){
             std::cout << "ERROR: Matrix limits out of boundaries." << std::endl;
         }else{
@@ -171,7 +175,14 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
         }
     };
     | Expressao { Expressao *exp = $1; 
-        if(exp->element != FUNCTION_KEY){std::cout << std::fixed << std::setprecision(precision) << exp->value << "\n"; }
+        if(exp->element != FUNCTION_KEY){
+            if(exp->type == MATRIX_KEY){
+                dcmat.ShowMatrix(exp->matrix);
+            }else{
+
+            std::cout << std::fixed << std::setprecision(precision) << exp->value << "\n"; 
+            }
+        }
         else{ std::cout << "funcao: "<< expressao.CalcFunctionValue(5, exp) << std::endl;}}
     | PLOT L_PAREN Expressao R_PAREN SEMICOLON {
         if($3->element == FUNCTION_KEY){
@@ -189,7 +200,7 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
         }
     }
 
-Matrix: L_SQUARE_BRACKET MatrixLine MatrixColum R_SQUARE_BRACKET SEMICOLON 
+Matrix: L_SQUARE_BRACKET MatrixLine MatrixColum R_SQUARE_BRACKET 
     {
         $2->matrix.push_back($2->line);
         if($3 != nullptr){
