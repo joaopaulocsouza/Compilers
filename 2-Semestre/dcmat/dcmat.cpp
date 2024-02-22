@@ -10,7 +10,7 @@ int integral_steps = 1000;
 bool Axis = true;
 bool Erase_Plot = true;
 
-char *Chart[25][80];
+std::string Chart[25][80];
 
 struct HashElement {
     std::string name;
@@ -93,6 +93,8 @@ std::string GetType(int value){
             return "FLOAT";
         case MATRIX_KEY:
             return "MATRIZ";
+        default:
+            return "TIPO NÃO IDENTIFICADO";
     }
 }
 
@@ -158,4 +160,64 @@ void DCMAT::PlotChart(Expressao *exp){
         std::cout << std::endl;
     }
     
+};
+
+int countDigits(int number) {
+    std::string numeroString = std::to_string(number);
+    return numeroString.length();
+}
+
+
+void DCMAT::ShowMatrix(MatrixClass *matrix){
+    int lineSize = 0;
+    bool isNegative[matrix->columns];
+    
+    for(int k = 0; k < matrix->columns; k++){
+        isNegative[k] = false;
+    }
+
+    for(int i = 0; i < matrix->lines; i++){
+        int result = 0;
+        for(int j = 0; j < matrix->columns; j++){
+            if(matrix->matrix[i][j] >= 0){
+                result += countDigits((int)matrix->matrix[i][j]) + precision;
+                if(precision > 0){
+                    result += 1;
+                }
+            }else{
+                isNegative[j] = true;
+            }
+        }
+        if(lineSize < result) lineSize = result;
+    }
+    lineSize += 1;
+    for(int k = 0; k < matrix->columns; k++){
+        if(isNegative) lineSize += 1;
+    }
+
+    std::cout << "+-";
+    for(int k = 0; k < lineSize; k++) std::cout << " ";
+    std::cout << "-+\n";
+    
+    for(int i = 0; i < matrix->lines; i++){
+        std::cout << "| ";
+        for(int j = 0; j < matrix->columns; j++){
+            if(matrix->matrix[i][j]){
+                if(matrix->matrix[i][j] >= 0 && isNegative[j]){
+                    std::cout << " ";
+                }
+                std::cout << std::fixed << std::setprecision(precision) << matrix->matrix[i][j] << " ";
+            }else{
+                 if(isNegative[j]){
+                    std::cout << " ";
+                }
+                std::cout << std::fixed << std::setprecision(precision) << (float)0 << " ";
+            }
+        }
+        std::cout <<  "|" << std::endl;
+    }
+
+    std::cout << "+-";
+    for(int k = 0; k < lineSize; k++) std::cout << " ";
+    std::cout << "-+\n";
 };

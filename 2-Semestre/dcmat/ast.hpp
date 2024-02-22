@@ -30,12 +30,23 @@ enum Element {
     EXPRESSION_KEY
 };
 
+class MatrixClass{
+    public:
+        std::vector<float> line;
+        std::vector<std::vector<float>> matrix;
+        int lines;
+        int columns;
+
+        MatrixClass(){};
+};
+
 class Expressao {
     public:
         float value;
         int element;
         int type;
         int oper;
+        MatrixClass *matrix;
         Expressao *left;
         Expressao *right;
         Expressao *exp;
@@ -161,7 +172,18 @@ class Expressao {
             }
 
             return new_exp;
-}
+        }
+
+        Expressao *CreateMatrix(MatrixClass *matrix){
+            Expressao *new_exp = new Expressao();
+
+            new_exp->type = MATRIX_KEY;
+            new_exp->left = nullptr;
+            new_exp->right = nullptr;
+            new_exp->matrix = matrix;
+
+            return new_exp;
+        }
 };
 
 

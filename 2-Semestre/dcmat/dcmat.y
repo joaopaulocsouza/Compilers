@@ -6,6 +6,7 @@
     DCMAT dcmat;
     Expressao expressao;
     Expressao *function = nullptr; 
+    Expressao *matrix = nullptr;
 
     DeclaredVar result;
 
@@ -31,6 +32,7 @@
 
 %code requires {
     class Expressao;
+    class MatrixClass;
 }
 
 %union{
@@ -39,6 +41,7 @@
     bool boolValue;
     char *stringValue;
     Expressao *expValue;
+    MatrixClass *matrixValue;
 }
 
 %token ADD;
@@ -103,6 +106,11 @@
 %type <expValue>ExpressionPowRem;
 %type <expValue>ExpressionMulDiv;
 %type <expValue>Signal;
+%type <floatValue>Limit;
+%type <matrixValue>Matrix;
+%type <matrixValue>MatrixColum;
+%type <matrixValue>MatrixLine;
+%type <matrixValue>MatrixValue;
 
 %start Dcmat;
 
@@ -114,6 +122,12 @@ Dcmat: EOL {return 0;}
 
 Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | SHOW SETTINGS SEMICOLON {dcmat.ShowSettings();}
+    | SHOW MATRIX SEMICOLON {
+        if(matrix != nullptr){
+            dcmat.ShowMatrix(matrix->matrix);}
+        else {
+            std::cout << "No Matrix defined!\n";
+            }}
     | RESET SETTINGS SEMICOLON {dcmat.ResetSettings();}
     | ABOUT SEMICOLON {
         printf("+----------------------------------------------+\n");
@@ -140,7 +154,22 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
          Expressao *exp = $3;
          dcmat.CreateHashItem($1, exp, exp->type);
     }
-    | MATRIX EQUAL L_SQUARE_BRACKET R_PAREN SEMICOLON;
+    | IDENTIFIER ASSIGN Matrix SEMICOLON{
+        // Expressao *exp = expressao.CreateMatrix($3);
+        // dcmat.CreateHashItem($1, exp, MATRIX_KEY);
+    }
+    | MATRIX EQUAL Matrix {
+        if($3->lines > 10 || $3->columns > 10){
+            std::cout << "ERROR: Matrix limits out of boundaries." << std::endl;
+        }else{
+            if(matrix){
+                matrix->matrix = $3;
+            }else{
+                Expressao *exp = expressao.CreateMatrix($3);
+                matrix = exp;
+            }
+        }
+    };
     | Expressao { Expressao *exp = $1; 
         if(exp->element != FUNCTION_KEY){std::cout << std::fixed << std::setprecision(precision) << exp->value << "\n"; }
         else{ std::cout << "funcao: "<< expressao.CalcFunctionValue(5, exp) << std::endl;}}
@@ -160,6 +189,59 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
         }
     }
 
+Matrix: L_SQUARE_BRACKET MatrixLine MatrixColum R_SQUARE_BRACKET SEMICOLON 
+    {
+        $2->matrix.push_back($2->line);
+        if($3 != nullptr){
+            for(int i = 0; i < $3->matrix.size(); i++){
+                $2->matrix.push_back($3->matrix[i]);
+            }
+        }
+        $2->lines = $2->matrix.size();
+        $2->columns = $2->matrix[0].size();
+        for(int i = 0; i < $2->matrix.size(); i++){
+            if($2->columns < $2->matrix[i].size()) $2->columns = $2->matrix[i].size();
+        }
+        $$ = $2;
+    };
+
+MatrixColum: MatrixColum COMMA MatrixLine {
+            MatrixClass *line = nullptr;
+                if($1 != nullptr){
+                    $1->matrix.push_back($3->line);
+                    line = $1;
+                }else{
+                    line = new MatrixClass();
+                    line->matrix.push_back($3->line);
+                }
+            $$ = line;
+        }
+        | {$$ = nullptr;};
+
+MatrixLine: L_SQUARE_BRACKET Limit MatrixValue R_SQUARE_BRACKET {
+        MatrixClass *line = new MatrixClass();
+        line->line.push_back($2);
+        if($3 != nullptr){
+            for(int i = 0; i < $3->line.size(); i++){
+                line->line.push_back($3->line[i]);
+            }
+        }
+        $$ = line;
+    };
+
+MatrixValue: MatrixValue COMMA Limit { 
+        MatrixClass *line = nullptr;
+            if($1 != nullptr){
+                $1->line.push_back($3);
+                line = $1;
+            }else{
+                line = new MatrixClass();
+                line->line.push_back($3);
+            }
+            $$ = line;
+        }
+        | {$$ = nullptr;};
+
 
 Set: FLOAT PRECISION INT[value] SEMICOLON {
         if($value <= 8 && $value >= 0){
@@ -168,18 +250,18 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
             printf("ERROR: float precision must be from 0 to 8\n");
         }
         };
-    | H_VIEW Signal COLON Signal SEMICOLON {
-            if($2->value < $4->value){
-                h_view_lo = $2->value;
-                h_view_hi = $4->value;
+    | H_VIEW Limit COLON Limit SEMICOLON {
+            if($2 < $4){
+                h_view_lo = $2;
+                h_view_hi = $4;
             }else{
                 printf("ERROR: h_view_lo must be smaller than h_view_hi\n");
             }
         };
-    | V_VIEW Signal COLON Signal SEMICOLON {
-            if($2->value < $4->value){
-                v_view_lo = $2->value;
-                v_view_hi = $4->value;
+    | V_VIEW Limit COLON Limit SEMICOLON {
+            if($2 < $4){
+                v_view_lo = $2;
+                v_view_hi = $4;
             }else{
                 printf("ERROR: v_view_lo must be smaller than v_view_hi\n");
             }
@@ -261,6 +343,13 @@ Termo: IDENTIFIER {
                 if($3->element != FUNCTION_KEY) value = abs($3->value);
                 $$ = expressao.CreateSheet($3->type, ABS_KEY, value, $3, element);
             }
+
+Limit: NumFloat {$$ = $1;};
+        | ADD NumFloat {$$ = $2;};
+        | SUBTRACT NumFloat { $$ = -$2; }
+        | NumInt {$$ = $1;};
+        | ADD NumInt {$$ = $2;};
+        | SUBTRACT NumInt {$$ = -$2;}
 
 Value: NumInt { $$ = expressao.CreateSheet(INT_KEY, OP, $1, nullptr); }; 
     | NumFloat { $$ = expressao.CreateSheet(FLOAT_KEY, OP, $1, nullptr); };

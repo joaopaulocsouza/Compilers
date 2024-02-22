@@ -17,12 +17,13 @@ class DCMAT {
         void CreateHashItem(char *name, Expressao *exp, int type);
         DeclaredVar FindHashItem(char *name);
         void ShowSymbols();
-
         void PlotChart(Expressao *exp);
+        void ShowMatrix(MatrixClass *matrix);
 
         int CalcRest(int x, int y){
             return (x%y);
         };
 };
+
 
 #endif
