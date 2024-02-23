@@ -220,3 +220,62 @@ void DCMAT::ShowMatrix(MatrixClass *matrix){
     for(int k = 0; k < lineSize; k++) std::cout << " ";
     std::cout << "-+\n";
 };
+
+float SolveDeterminantAux(  std::vector<std::vector<float>> matrix){
+    float det = 0;
+
+    if(matrix.size() == 1){
+        det = matrix[0][0];
+    }else if(matrix.size() == 2){
+         det = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+    }else{
+          for (int i = 0; i < matrix.size(); ++i) {
+            std::vector<std::vector<float>> submatrix(matrix.size() - 1, std::vector<float>(matrix.size() - 1));
+
+            for (int j = 1; j < submatrix.size() ; ++j) {
+                int k = 0;
+                for (int l = 0; l < matrix.size(); ++l) {
+                    if (l != i) {
+                       submatrix[j - 1][k] = submatrix[j][l];
+                        ++k;
+                    }
+                }
+            }
+
+            det += submatrix[0][i] * SolveDeterminantAux(submatrix) * ((i % 2 == 0) ? 1 : -1);
+        }
+    
+    }
+
+    return det;
+};
+
+void DCMAT::SolveDeterminant(MatrixClass *matrix){
+    float det = 0;
+
+    if(matrix->columns == 1){
+        det = matrix->matrix[0][0];
+    }else if(matrix->columns == 2){
+         det = matrix->matrix[0][0] * matrix->matrix[1][1] - matrix->matrix[0][1] * matrix->matrix[1][0];
+    }else{
+          for (int i = 0; i < matrix->columns; ++i) {
+            std::vector<std::vector<float>> submatrix(matrix->columns - 1, std::vector<float>(matrix->columns - 1));
+
+            for (int j = 1; j < matrix->columns; ++j) {
+                int k = 0;
+                for (int l = 0; l < matrix->columns; ++l) {
+                    if (l != i) {
+                        submatrix[j - 1][k] = matrix->matrix[j][l];
+                        ++k;
+                    }
+                }
+            }
+
+            det += matrix->matrix[0][i] * SolveDeterminantAux(submatrix) * ((i % 2 == 0) ? 1 : -1);
+        }
+    
+    }
+
+    std::cout << std::fixed << std::setprecision(precision) << det << std::endl;
+
+};

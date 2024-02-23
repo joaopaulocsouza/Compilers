@@ -174,6 +174,17 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
             }
         }
     };
+    | SOLVE DETERMINANT SEMICOLON {
+        if(matrix){
+            if(matrix->matrix->lines != matrix->matrix->columns){
+                std::cout << "Matrix format incorrect!\n";
+            }else{
+                dcmat.SolveDeterminant(matrix->matrix);
+            }
+        }else{
+            std::cout << "No Function defined!\n";
+        }
+    }
     | Expressao { Expressao *exp = $1; 
         if(exp->element != FUNCTION_KEY){
             if(exp->type == MATRIX_KEY){
