@@ -196,6 +196,7 @@ void DCMAT::ShowMatrix(MatrixClass *matrix){
 
     std::cout << "+-";
     for(int k = 0; k < lineSize; k++) std::cout << " ";
+    for(int i = 0; i < matrix->lines; i++) if(isNegative[i]) {std::cout << " ";};
     std::cout << "-+\n";
     
     for(int i = 0; i < matrix->lines; i++){
@@ -218,6 +219,7 @@ void DCMAT::ShowMatrix(MatrixClass *matrix){
 
     std::cout << "+-";
     for(int k = 0; k < lineSize; k++) std::cout << " ";
+    for(int i = 0; i < matrix->lines; i++) if(isNegative[i]) {std::cout << " ";};
     std::cout << "-+\n";
 };
 
@@ -250,7 +252,7 @@ float SolveDeterminantAux(  std::vector<std::vector<float>> matrix){
     return det;
 };
 
-void DCMAT::SolveDeterminant(MatrixClass *matrix){
+float DCMAT::SolveDeterminant(MatrixClass *matrix){
     float det = 0;
 
     if(matrix->columns == 1){
@@ -275,7 +277,76 @@ void DCMAT::SolveDeterminant(MatrixClass *matrix){
         }
     
     }
+    
+    return det;
 
-    std::cout << std::fixed << std::setprecision(precision) << det << std::endl;
+};
+
+void DCMAT::SolveLinearSystem(MatrixClass *matrix){
+    MatrixClass *newMatrix = new MatrixClass();
+
+    std::vector<std::vector<float>> L(matrix->lines, std::vector<float>(matrix->lines, 0)), U;
+    U = matrix->matrix;
+
+    for (int i = 0; i < matrix->lines; ++i) {
+        L[i][i] = 1;
+        for (int j = i + 1; j < matrix->lines; ++j) {
+            double ratio = U[j][i] / U[i][i];
+            L[j][i] = ratio;
+            for (int k = i; k < matrix->lines+1; ++k) {
+                U[j][k] -= ratio * U[i][k];
+            }
+        }
+    }
+
+    std::vector<float> y(matrix->lines);
+
+    for (int i = 0; i < matrix->lines; ++i) {
+        double sum = 0;
+        for (int j = 0; j < i; ++j) {
+            sum += L[i][j] * y[j];
+        }
+        y[i] = (matrix->matrix[i][matrix->columns-1] - sum) / L[i][i];
+    }
+
+    
+    std::vector<float> result(matrix->lines);
+    for (int i = matrix->lines - 1; i >= 0; --i) {
+        double sum = 0;
+        for (int j = i + 1; j < matrix->lines; ++j) {
+            sum += U[i][j] * result[j];
+        }
+        result[i] = (y[i] - sum) / U[i][i];
+    }
+
+    int verify = 0;
+    bool hasNullLine = false;
+
+    for (int i = 0; i < matrix->lines; ++i) {
+        if (U[i][i] != 0) verify++;
+    }
+
+    for (int i = 0; i < matrix->lines; i++){
+        hasNullLine = true;
+        for (int j = 0; j < matrix->lines; j++){
+            if(U[i][j] != 0){
+                hasNullLine = false;
+                break;
+            }
+        }
+        if(hasNullLine) break;
+    }
+
+    if(verify == matrix->lines){
+        std::cout << "\nMatrix X:\n\n";
+        for(int i = 0; i < matrix->lines; i++){
+            std::cout << std::fixed << std::setprecision(precision) << result[i] << std::endl;
+        }
+        std::cout << std::endl;
+    }else if(!hasNullLine){
+        std::cout << "\nSPI - The Linear System has infinitely many solutions\n\n";
+    }else{
+        std::cout << "\nSI - The Linear System has no solution\n\n";
+    }
 
 };

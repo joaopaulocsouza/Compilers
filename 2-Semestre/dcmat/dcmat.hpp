@@ -19,7 +19,8 @@ class DCMAT {
         void ShowSymbols();
         void PlotChart(Expressao *exp);
         void ShowMatrix(MatrixClass *matrix);
-        void SolveDeterminant(MatrixClass *matrix);
+        float SolveDeterminant(MatrixClass *matrix);
+        void SolveLinearSystem(MatrixClass *matrix);
 
         int CalcRest(int x, int y){
             return (x%y);

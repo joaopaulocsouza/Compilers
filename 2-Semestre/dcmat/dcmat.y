@@ -179,7 +179,19 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
             if(matrix->matrix->lines != matrix->matrix->columns){
                 std::cout << "Matrix format incorrect!\n";
             }else{
-                dcmat.SolveDeterminant(matrix->matrix);
+                float det = dcmat.SolveDeterminant(matrix->matrix);
+                std::cout << std::fixed << std::setprecision(precision) << det << std::endl;
+            }
+        }else{
+            std::cout << "No Function defined!\n";
+        }
+    }
+    | SOLVE LINEAR_SYSTEM SEMICOLON {
+        if(matrix){
+            if(matrix->matrix->lines != matrix->matrix->columns-1){
+                std::cout << "Matrix format incorrect!\n";
+            }else{
+                dcmat.SolveLinearSystem(matrix->matrix);
             }
         }else{
             std::cout << "No Function defined!\n";
@@ -301,26 +313,26 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
 
 Expressao: ExpressionSumSub {$$ = $1;};
 
-ExpressionSumSub: ExpressionMulDiv ADD ExpressionSumSub {
+ExpressionSumSub: ExpressionSumSub ADD ExpressionMulDiv {
                         $$ = expressao.CreateExp(ADD_KEY, $1, $3);    
                 };
-                | ExpressionMulDiv SUBTRACT ExpressionSumSub {
+                | ExpressionSumSub SUBTRACT ExpressionMulDiv {
                         $$ = expressao.CreateExp(SUB_KEY, $1, $3);    
                 };
                 | ExpressionMulDiv {$$ = $1;};
 
-ExpressionMulDiv: ExpressionPowRem MULTIPLY ExpressionMulDiv {
+ExpressionMulDiv: ExpressionMulDiv MULTIPLY ExpressionPowRem {
                         $$ = expressao.CreateExp(MULTIPLY_KEY, $1, $3);    
                 };
-                | ExpressionPowRem DIV ExpressionMulDiv {
+                | ExpressionMulDiv DIV ExpressionPowRem {
                         $$ = expressao.CreateExp(DIV_KEY, $1, $3);    
                 };
                 | ExpressionPowRem {$$ = $1;};
 
-ExpressionPowRem: Signal POW ExpressionPowRem {
+ExpressionPowRem: ExpressionPowRem POW Signal {
                         $$ = expressao.CreateExp(POW_KEY, $1, $3);    
                 };
-                | Signal REST ExpressionPowRem {
+                | ExpressionPowRem REST Signal {
                         $$ = expressao.CreateExp(REST, $1, $3);    
                 };
                 | Signal {$$ = $1;};
