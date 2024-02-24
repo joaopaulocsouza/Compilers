@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 33 "dcmat.y"
+#line 35 "dcmat.y"
 
     class Expressao;
     class MatrixClass;
@@ -120,7 +120,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 38 "dcmat.y"
+#line 40 "dcmat.y"
 
     int integerValue;
     float floatValue;

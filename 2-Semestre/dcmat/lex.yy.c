@@ -1172,7 +1172,7 @@ YY_RULE_SETUP
 case 55:
 YY_RULE_SETUP
 #line 71 "dcmat.l"
-{std::cout << "Invalid Symbol: " << yytext << "\n"; isLexico = true;}
+{std::cout << "\nInvalid Symbol: " << yytext << "\n\n"; isLexico = true;}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP

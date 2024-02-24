@@ -21,6 +21,7 @@ class DCMAT {
         void ShowMatrix(MatrixClass *matrix);
         float SolveDeterminant(MatrixClass *matrix);
         void SolveLinearSystem(MatrixClass *matrix);
+        void Integrate(float superior, float inferior, Expressao *exp);
 
         int CalcRest(int x, int y){
             return (x%y);

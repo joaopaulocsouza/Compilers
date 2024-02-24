@@ -350,3 +350,14 @@ void DCMAT::SolveLinearSystem(MatrixClass *matrix){
     }
 
 };
+
+void DCMAT::Integrate(float superior, float inferior, Expressao *exp){
+    float subInterval = (superior - inferior) / integral_steps;
+    float result = 0;
+
+    for(int i = 0; i < integral_steps; i++){
+        result += subInterval * exp->CalcFunctionValue(inferior + subInterval * i, exp);
+    }
+
+    std::cout << "\n" << std::fixed << std::setprecision(precision) << result << "\n\n";
+};

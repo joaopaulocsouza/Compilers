@@ -68,6 +68,6 @@
 [ ] {};
 "\t" {};
 
-. {std::cout << "Invalid Symbol: " << yytext << "\n"; isLexico = true;}
+. {std::cout << "\nInvalid Symbol: " << yytext << "\n\n"; isLexico = true;}
 
 %%

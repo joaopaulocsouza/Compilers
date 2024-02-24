@@ -22,6 +22,8 @@
     float euler = 2.71828182;
     float pi = 3.14159265;
 
+    bool hasError = false;
+
     bool isLexico = false;
     extern int yylex();
     extern char* yytext;
@@ -130,7 +132,7 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
             }}
     | RESET SETTINGS SEMICOLON {dcmat.ResetSettings();}
     | ABOUT SEMICOLON {
-        printf("+----------------------------------------------+\n");
+        printf("\n+----------------------------------------------+\n");
         printf("|"); for(int i = 0; i < 46; i++) {printf(" ");}; printf("|\n");
         printf("|"); for(int i = 0; i < 17; i++) {printf(" ");};  printf("201800560120"); for(int i = 0; i < 17; i++) {printf(" ");}; printf("|\n");
         printf("|"); for(int i = 0; i < 9; i++) {printf(" ");};  printf("João Paulo Cardoso de Souza"); for(int i = 0; i < 10; i++) {printf(" ");}; printf("|\n");
@@ -154,17 +156,27 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
         }
     }
     | IDENTIFIER ASSIGN Expressao SEMICOLON {
-         Expressao *exp = $3;
-         dcmat.CreateHashItem($1, exp, exp->type);
+        if(hasError) {
+            hasError = false;
+        }else{
+            Expressao *exp = $3;
+            dcmat.CreateHashItem($1, exp, exp->type);
+            if(exp->type == FLOAT_KEY || exp->type == INT_KEY) 
+                std::cout << "\n" << std::fixed << std::setprecision(precision) << (float)exp->value << "\n\n" ;
+        };
     }
     | IDENTIFIER ASSIGN Matrix SEMICOLON{
-        Expressao *exp = expressao.CreateMatrix($3);
-        dcmat.CreateHashItem($1, exp, MATRIX_KEY);
-        dcmat.ShowMatrix($3);
+        if($3->lines > 10 || $3->columns > 10){
+            std::cout << "\nERROR: Matrix limits out of boundaries.\n" << std::endl;
+        }else{
+            Expressao *exp = expressao.CreateMatrix($3);
+            dcmat.CreateHashItem($1, exp, MATRIX_KEY);
+            dcmat.ShowMatrix($3);
+        }
     }
     | MATRIX EQUAL Matrix SEMICOLON{
         if($3->lines > 10 || $3->columns > 10){
-            std::cout << "ERROR: Matrix limits out of boundaries." << std::endl;
+            std::cout << "\nERROR: Matrix limits out of boundaries.\n" << std::endl;
         }else{
             if(matrix){
                 matrix->matrix = $3;
@@ -206,7 +218,7 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
             std::cout << std::fixed << std::setprecision(precision) << exp->value << "\n"; 
             }
         }
-        else{ std::cout << "funcao: "<< expressao.CalcFunctionValue(5, exp) << std::endl;}}
+        else{ std::cout << "\nThe x variable cannot be present on expressions.\n" << std::endl;}}
     | PLOT L_PAREN Expressao R_PAREN SEMICOLON {
         if($3->element == FUNCTION_KEY){
             function = $3;
@@ -220,6 +232,13 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
             dcmat.PlotChart(function);
         }else{
             std::cout << "No Function defined!\n";
+        }
+    }
+    | INTEGRATE L_PAREN Limit COLON Limit COMMA Expressao R_PAREN SEMICOLON {
+        if($5 <= $3){
+            std::cout << "\nERROR: lower limit must be smaller than upper limit\n\n";
+        }else{
+            dcmat.Integrate($5, $3, $7);
         }
     }
 
@@ -277,11 +296,11 @@ MatrixValue: MatrixValue COMMA Limit {
         | {$$ = nullptr;};
 
 
-Set: FLOAT PRECISION INT[value] SEMICOLON {
+Set: FLOAT PRECISION Limit[value] SEMICOLON {
         if($value <= 8 && $value >= 0){
             precision = $value;
         }else{
-            printf("ERROR: float precision must be from 0 to 8\n");
+            printf("\nERROR: float precision must be from 0 to 8\n\n");
         }
         };
     | H_VIEW Limit COLON Limit SEMICOLON {
@@ -289,7 +308,7 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
                 h_view_lo = $2;
                 h_view_hi = $4;
             }else{
-                printf("ERROR: h_view_lo must be smaller than h_view_hi\n");
+                printf("\nERROR: h_view_lo must be smaller than h_view_hi\n\n");
             }
         };
     | V_VIEW Limit COLON Limit SEMICOLON {
@@ -297,7 +316,7 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
                 v_view_lo = $2;
                 v_view_hi = $4;
             }else{
-                printf("ERROR: v_view_lo must be smaller than v_view_hi\n");
+                printf("\nERROR: v_view_lo must be smaller than v_view_hi\n\n");
             }
         };
     | AXIS Bool SEMICOLON {
@@ -306,9 +325,13 @@ Set: FLOAT PRECISION INT[value] SEMICOLON {
     | ERASE PLOT Bool SEMICOLON {
             Erase_Plot = $3;
         };
-    | INTEGRAL_STEPS INT SEMICOLON {
-            integral_steps = $2;
-        };
+    | INTEGRAL_STEPS Limit SEMICOLON {
+        if($2 <= 0){
+            std::cout << "\nERROR: integral_steps must be a positive non-zero integer\n\n";
+        }else{
+            integral_steps = (int)$2;
+        }
+    };
 
 
 Expressao: ExpressionSumSub {$$ = $1;};
@@ -350,6 +373,7 @@ Termo: IDENTIFIER {
             if(result.exists){
                $$ = result.value;
             }else{
+                hasError = true;
                 std::cout << "Undefined symbol [" << $1 << "]\n";
             }};
         | Value {$$ = $1;};
