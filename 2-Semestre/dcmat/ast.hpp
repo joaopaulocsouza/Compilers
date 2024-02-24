@@ -47,7 +47,7 @@ class Expressao {
         int element;
         int type;
         int oper;
-        bool saved;
+        std::string id;
         MatrixClass *matrix;
         Expressao *left;
         Expressao *right;
@@ -163,7 +163,7 @@ class Expressao {
         }
 
 
-        Expressao *CreateSheet(int type, int oper, float value, Expressao *exp, int element = EXPRESSION_KEY){
+        Expressao *CreateSheet(int type, int oper, float value, Expressao *exp, int element = EXPRESSION_KEY, std::string name = "NULL"){
             Expressao *new_exp = new Expressao(); 
 
             new_exp->oper = oper;
@@ -173,6 +173,7 @@ class Expressao {
             new_exp->right = nullptr;
             new_exp->exp = exp;
             new_exp->element = element;
+            new_exp->id = name;
 
             if(type == VAR_KEY || type == SUBVAR_KEY){
                 new_exp->element = FUNCTION_KEY;

@@ -369,3 +369,43 @@ void DCMAT::Sum(float inferior, float superior, Expressao *exp){
     };
     std::cout << "\n" << std::fixed << std::setprecision(precision) << result << "\n\n";
 };
+
+void DCMAT::ReversePolishNotation(Expressao *exp){
+    if(exp->left != nullptr) ReversePolishNotation(exp->left);
+    if(exp->right != nullptr) ReversePolishNotation(exp->right);
+
+     switch (exp->oper) {
+        case SUB_KEY:
+            std::cout << "- "; 
+            break;  
+        case ADD_KEY:
+            std::cout << "+ "; break;  
+        case DIV_KEY:
+            std::cout << "/ "; break;  
+        case MULTIPLY_KEY:
+            std::cout << "* "; break;  
+        case POW_KEY:
+            std::cout << "^ "; break;  
+        case SEN_KEY:
+            ReversePolishNotation(exp->exp); std::cout << "SEN "; break;  
+        case COS_KEY:
+            ReversePolishNotation(exp->exp); std::cout << "COS "; break;  
+        case TAN_KEY:
+           ReversePolishNotation(exp->exp); std::cout << "TAN "; break;  
+        case ABS_KEY:
+          ReversePolishNotation(exp->exp); std::cout << "ABS "; break;  
+        case EXP_KEY:
+            ReversePolishNotation(exp->exp); break;
+        case OP:
+            switch (exp->type){
+                case VAR_KEY:
+                    std::cout << "x "; break;  
+                case SUBVAR_KEY:
+                    std::cout << "x - "; break;
+                case FLOAT_KEY: case INT_KEY:
+                    std::cout << exp->id  << " "; break; 
+                case ID_KEY:
+                    std::cout << exp->id << " "; 
+                }
+    }
+};

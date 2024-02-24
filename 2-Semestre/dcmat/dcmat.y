@@ -262,6 +262,11 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
 
         undeclared->vetor.size() > 0 ?PrintUndeclareds():dcmat.Sum($5, $7, $9);
     }
+    | RPN L_PAREN Expressao R_PAREN SEMICOLON {
+        std::cout << "\nExpression in RPN format:\n\n";
+        dcmat.ReversePolishNotation($3);
+        std::cout << "\n\n";
+    }
 
 Matrix: L_SQUARE_BRACKET MatrixLine MatrixColum R_SQUARE_BRACKET 
     {
@@ -392,10 +397,10 @@ Signal: Termo {$$ = $1;};
 Termo: IDENTIFIER {
             result = dcmat.FindHashItem($1);
             if(result.exists){
-                result.value->saved = true;
+                result.value->id = $1;
                $$ = result.value;
             }else{
-                Expressao *exp = expressao.CreateSheet(ID_KEY, OP, 0, nullptr);
+                Expressao *exp = expressao.CreateSheet(ID_KEY, OP, 0, nullptr, EXPRESSION_KEY, $1);
                 $$ = exp;
                 hasUndeclared = true;
                 undeclared->vetor.push_back($1);
