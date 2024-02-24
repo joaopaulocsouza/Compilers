@@ -22,7 +22,8 @@ enum Types {
     SUBVAR_KEY,
     INT_KEY,
     FLOAT_KEY,
-    MATRIX_KEY
+    MATRIX_KEY,
+    ID_KEY
 };
 
 enum Element {
@@ -46,6 +47,7 @@ class Expressao {
         int element;
         int type;
         int oper;
+        bool saved;
         MatrixClass *matrix;
         Expressao *left;
         Expressao *right;
@@ -62,7 +64,9 @@ class Expressao {
                 case VAR_KEY:
                     return x;
                 case SUBVAR_KEY:
-                    return -x;  
+                    return -x;
+                case ID_KEY:
+                    return x;
                 default:
                     return exp->value;
             }
@@ -126,26 +130,29 @@ class Expressao {
             new_exp->oper = oper; 
             new_exp->left = termo; 
             new_exp->right = exp;
-            switch (oper) {
-                case ADD_KEY:
-                    new_exp->value = termo->value + exp->value;
-                    break;
-                case SUB_KEY:
-                    new_exp->value = termo->value - exp->value;
-                    break;
-                case MULTIPLY_KEY:
-                    new_exp->value = termo->value * exp->value;
-                    break;
-                case DIV_KEY:
-                    new_exp->value = termo->value / exp->value;
-                    break;
-                case REST_KEY:
-                    new_exp->value = static_cast<int>(termo->value) % static_cast<int>(exp->value);
-                    break;
-                case POW_KEY:
-                    new_exp->value = pow(termo->value, exp->value);
-                    break;
-            }
+            if(termo->type == FLOAT_KEY ||termo->type == INT_KEY ||
+                exp->type == FLOAT_KEY ||exp->type == INT_KEY ){
+                switch (oper) {
+                    case ADD_KEY:
+                        new_exp->value = termo->value + exp->value;
+                        break;
+                    case SUB_KEY:
+                        new_exp->value = termo->value - exp->value;
+                        break;
+                    case MULTIPLY_KEY:
+                        new_exp->value = termo->value * exp->value;
+                        break;
+                    case DIV_KEY:
+                        new_exp->value = termo->value / exp->value;
+                        break;
+                    case REST_KEY:
+                        new_exp->value = static_cast<int>(termo->value) % static_cast<int>(exp->value);
+                        break;
+                    case POW_KEY:
+                        new_exp->value = pow(termo->value, exp->value);
+                        break;
+                }
+            };
             if(termo->element == FUNCTION_KEY || exp->element == FUNCTION_KEY){ 
                 new_exp->element = FUNCTION_KEY;
             }else{
@@ -185,6 +192,13 @@ class Expressao {
 
             return new_exp;
         }
+};
+
+class Vetor {
+    public:
+        std::vector<std::string> vetor;
+
+        Vetor(){};
 };
 
 

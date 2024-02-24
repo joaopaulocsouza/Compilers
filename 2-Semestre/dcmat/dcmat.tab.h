@@ -45,12 +45,13 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 35 "dcmat.y"
+#line 38 "dcmat.y"
 
     class Expressao;
     class MatrixClass;
+    class Vetor;
 
-#line 54 "dcmat.tab.h"
+#line 55 "dcmat.tab.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -120,7 +121,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 40 "dcmat.y"
+#line 44 "dcmat.y"
 
     int integerValue;
     float floatValue;
@@ -129,7 +130,7 @@ union YYSTYPE
     Expressao *expValue;
     MatrixClass *matrixValue;
 
-#line 133 "dcmat.tab.h"
+#line 134 "dcmat.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

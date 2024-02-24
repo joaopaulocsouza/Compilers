@@ -361,3 +361,11 @@ void DCMAT::Integrate(float superior, float inferior, Expressao *exp){
 
     std::cout << "\n" << std::fixed << std::setprecision(precision) << result << "\n\n";
 };
+
+void DCMAT::Sum(float inferior, float superior, Expressao *exp){
+    float result = 0;
+    for(int i = inferior; i <= superior; i++){
+        result += exp->CalcFunctionValue(i, exp);
+    };
+    std::cout << "\n" << std::fixed << std::setprecision(precision) << result << "\n\n";
+};

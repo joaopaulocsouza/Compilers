@@ -23,6 +23,8 @@
     float pi = 3.14159265;
 
     bool hasError = false;
+    bool hasUndeclared = false;
+    Vetor *undeclared = new Vetor();
 
     bool isLexico = false;
     extern int yylex();
@@ -30,11 +32,13 @@
     extern int yychar;
     extern int yyleng;
     void yyerror(const void *s);
+    void PrintUndeclareds();
 %}
 
 %code requires {
     class Expressao;
     class MatrixClass;
+    class Vetor;
 }
 
 %union{
@@ -120,7 +124,7 @@
 
 Dcmat: EOL {return 0;}
     | QUIT EOL {exit(0);}
-    | Command EOL {return 0;}
+    | Command EOL { hasUndeclared = false; undeclared->vetor.clear() ;return 0;}
 
 Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | SHOW SETTINGS SEMICOLON {dcmat.ShowSettings();}
@@ -156,8 +160,8 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
         }
     }
     | IDENTIFIER ASSIGN Expressao SEMICOLON {
-        if(hasError) {
-            hasError = false;
+        if(hasUndeclared){
+            PrintUndeclareds();
         }else{
             Expressao *exp = $3;
             dcmat.CreateHashItem($1, exp, exp->type);
@@ -210,7 +214,9 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
         }
     }
     | Expressao { Expressao *exp = $1; 
-        if(exp->element != FUNCTION_KEY){
+        if(hasUndeclared){
+            PrintUndeclareds();
+        }else if(exp->element != FUNCTION_KEY){
             if(exp->type == MATRIX_KEY){
                 dcmat.ShowMatrix(exp->matrix);
             }else{
@@ -220,7 +226,9 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
         }
         else{ std::cout << "\nThe x variable cannot be present on expressions.\n" << std::endl;}}
     | PLOT L_PAREN Expressao R_PAREN SEMICOLON {
-        if($3->element == FUNCTION_KEY){
+        if(hasUndeclared){
+            PrintUndeclareds();
+        }else if($3->element == FUNCTION_KEY){
             function = $3;
             dcmat.PlotChart(function);
         }else{
@@ -235,11 +243,24 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
         }
     }
     | INTEGRATE L_PAREN Limit COLON Limit COMMA Expressao R_PAREN SEMICOLON {
-        if($5 <= $3){
+        if(hasUndeclared){
+            PrintUndeclareds();
+        }else if($5 <= $3){
             std::cout << "\nERROR: lower limit must be smaller than upper limit\n\n";
         }else{
             dcmat.Integrate($5, $3, $7);
         }
+    }
+    | SUM L_PAREN IDENTIFIER COMMA Limit COLON Limit COMMA Expressao R_PAREN SEMICOLON {
+         if(hasUndeclared){
+            for(int i = 0; i < undeclared->vetor.size(); i++){
+                if(undeclared->vetor[i] == $3){
+                    undeclared->vetor.erase(undeclared->vetor.begin() + i);
+                }
+            }
+        }
+
+        undeclared->vetor.size() > 0 ?PrintUndeclareds():dcmat.Sum($5, $7, $9);
     }
 
 Matrix: L_SQUARE_BRACKET MatrixLine MatrixColum R_SQUARE_BRACKET 
@@ -371,10 +392,13 @@ Signal: Termo {$$ = $1;};
 Termo: IDENTIFIER {
             result = dcmat.FindHashItem($1);
             if(result.exists){
+                result.value->saved = true;
                $$ = result.value;
             }else{
-                hasError = true;
-                std::cout << "Undefined symbol [" << $1 << "]\n";
+                Expressao *exp = expressao.CreateSheet(ID_KEY, OP, 0, nullptr);
+                $$ = exp;
+                hasUndeclared = true;
+                undeclared->vetor.push_back($1);
             }};
         | Value {$$ = $1;};
         | SEN L_PAREN Expressao R_PAREN { 
@@ -451,6 +475,15 @@ void yyerror(const void *s) {
 
     return;
 }
+
+void PrintUndeclareds(){
+    std::cout << "\n";
+    for(int i = 0; i < undeclared->vetor.size(); i++){
+        std::cout << "Undefined symbol [" << undeclared->vetor[i] << "]\n";
+    }
+    std::cout << "\n";
+    undeclared->vetor.clear(); hasUndeclared = false;
+};
 
 int main(int argc, char **argv) {
     while(1){
