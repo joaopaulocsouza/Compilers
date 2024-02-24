@@ -30,7 +30,7 @@ void DCMAT::ShowSettings(){
 
     Axis?std::cout << "\n\nDraw Axis: " << "ON":std::cout << "\n\nDraw Axis: " << "OFF";
     Erase_Plot?std::cout << "\nErase Plot: " << "ON":std::cout << "\nErase Plot: " << "OFF";
-    std::cout << "\n";
+    std::cout << "\n\n";
 };
 
 void DCMAT::ResetSettings(){
@@ -85,26 +85,24 @@ DeclaredVar DCMAT::FindHashItem(char *name){
     return result;
 };
 
-void GetType(Expressao *value){
-    switch (value->type){
-        case INT_KEY:
-            std::cout << "INT" << std::endl;
-        case FLOAT_KEY:
-            std::cout << "FLOAT"  << std::endl;
-        case MATRIX_KEY:
-            std::cout << "MATRIZ [" << value->matrix->lines <<  "][" << value->matrix->columns << "]" << std::endl ;
-    }
-}
-
 void DCMAT::ShowSymbols(){
+    std::cout << "\n";
     for(int i=0;i<211;i++){
         if(hash[i].size() > 0){
             for(int j = 0; j < hash[i].size() ; j++){
                 std::cout << hash[i][j].name << " - ";
-                GetType(hash[i][j].value);
+                switch (hash[i][j].value->type){
+                    case INT_KEY:
+                        std::cout << "INT"<< std::endl; break;
+                    case FLOAT_KEY:
+                        std::cout << "FLOAT" << std::endl; break;
+                    case MATRIX_KEY:
+                        std::cout << "MATRIZ [" << hash[i][j].value->matrix->lines <<  "][" << hash[i][j].value->matrix->columns << "]" << std::endl; break;
+                }
             }
         }
     }
+    std::cout << "\n";
 };
 
 
@@ -217,10 +215,11 @@ void DCMAT::ShowMatrix(MatrixClass *matrix){
         std::cout <<  "|" << std::endl;
     }
 
-    std::cout << "+-";
+
+    std::cout << "\n+-";
     for(int k = 0; k < lineSize; k++) std::cout << " ";
     for(int i = 0; i < matrix->lines; i++) if(isNegative[i]) {std::cout << " ";};
-    std::cout << "-+\n";
+    std::cout << "-+\n\n";
 };
 
 float SolveDeterminantAux(  std::vector<std::vector<float>> matrix){
@@ -403,6 +402,11 @@ void DCMAT::ReversePolishNotation(Expressao *exp){
                 case SUBVAR_KEY:
                     std::cout << "x - "; break;
                 case FLOAT_KEY: case INT_KEY:
+                    if(exp->id.compare("NULL")){
+                        std::cout << exp->id  << " "; break; 
+                    }else{
+                        std::cout << std::fixed << std::setprecision(precision) << exp->value << " ";
+                    }
                     std::cout << exp->id  << " "; break; 
                 case ID_KEY:
                     std::cout << exp->id << " "; 

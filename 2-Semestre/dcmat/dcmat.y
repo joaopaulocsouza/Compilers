@@ -132,7 +132,7 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
         if(matrix != nullptr){
             dcmat.ShowMatrix(matrix->matrix);}
         else {
-            std::cout << "No Matrix defined!\n";
+            std::cout << "\nNo Matrix defined!\n\n";
             }}
     | RESET SETTINGS SEMICOLON {dcmat.ResetSettings();}
     | ABOUT SEMICOLON {
@@ -151,12 +151,12 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
                 dcmat.ShowMatrix(result.value->matrix);
             }
             else if(result.type == INT_KEY){
-                std::cout << $1 << " = " << result.value->value << "\n";
+                std::cout << "\n" << $1 << " = " << result.value->value << "\n\n";
             }else if(result.type == FLOAT_KEY){
-                printf("%s = %.*f\n", $1, precision, result.value->value);
+                std::cout << "\n" << std::fixed << std::setprecision(precision) << $1 << " = " << result.value->value << "\n\n";
             }
         }else{
-            std::cout << "Undefined symbol\n";
+            std::cout << "\nUndefined symbol\n\n";
         }
     }
     | IDENTIFIER ASSIGN Expressao SEMICOLON {
@@ -196,21 +196,21 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
                 std::cout << "Matrix format incorrect!\n";
             }else{
                 float det = dcmat.SolveDeterminant(matrix->matrix);
-                std::cout << std::fixed << std::setprecision(precision) << det << std::endl;
+                std::cout << "\n" << std::fixed << std::setprecision(precision) << det << "\n\n";
             }
         }else{
-            std::cout << "No Function defined!\n";
+            std::cout << "\nNo Function defined!\n\n";
         }
     }
     | SOLVE LINEAR_SYSTEM SEMICOLON {
         if(matrix){
             if(matrix->matrix->lines != matrix->matrix->columns-1){
-                std::cout << "Matrix format incorrect!\n";
+                std::cout << "\nMatrix format incorrect!\n\n";
             }else{
                 dcmat.SolveLinearSystem(matrix->matrix);
             }
         }else{
-            std::cout << "No Function defined!\n";
+            std::cout << "\nNo Function defined!\n\n";
         }
     }
     | Expressao { Expressao *exp = $1; 
@@ -221,7 +221,7 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
                 dcmat.ShowMatrix(exp->matrix);
             }else{
 
-            std::cout << std::fixed << std::setprecision(precision) << exp->value << "\n"; 
+            std::cout << "\n" << std::fixed << std::setprecision(precision) << exp->value << "\n\n"; 
             }
         }
         else{ std::cout << "\nThe x variable cannot be present on expressions.\n" << std::endl;}}
@@ -232,14 +232,14 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
             function = $3;
             dcmat.PlotChart(function);
         }else{
-            std::cout << "No Function defined!\n";
+            std::cout << "\nNo Function defined!\n\n";
         }
     };
     | PLOT SEMICOLON {
         if(function){
             dcmat.PlotChart(function);
         }else{
-            std::cout << "No Function defined!\n";
+            std::cout << "\nNo Function defined!\n\n";
         }
     }
     | INTEGRATE L_PAREN Limit COLON Limit COMMA Expressao R_PAREN SEMICOLON {

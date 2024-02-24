@@ -1317,7 +1317,7 @@ yyreduce:
         if(matrix != nullptr){
             dcmat.ShowMatrix(matrix->matrix);}
         else {
-            std::cout << "No Matrix defined!\n";
+            std::cout << "\nNo Matrix defined!\n\n";
             }}
 #line 1323 "dcmat.tab.c"
     break;
@@ -1350,12 +1350,12 @@ yyreduce:
                 dcmat.ShowMatrix(result.value->matrix);
             }
             else if(result.type == INT_KEY){
-                std::cout << (yyvsp[-1].stringValue) << " = " << result.value->value << "\n";
+                std::cout << "\n" << (yyvsp[-1].stringValue) << " = " << result.value->value << "\n\n";
             }else if(result.type == FLOAT_KEY){
-                printf("%s = %.*f\n", (yyvsp[-1].stringValue), precision, result.value->value);
+                std::cout << "\n" << std::fixed << std::setprecision(precision) << (yyvsp[-1].stringValue) << " = " << result.value->value << "\n\n";
             }
         }else{
-            std::cout << "Undefined symbol\n";
+            std::cout << "\nUndefined symbol\n\n";
         }
     }
 #line 1362 "dcmat.tab.c"
@@ -1415,10 +1415,10 @@ yyreduce:
                 std::cout << "Matrix format incorrect!\n";
             }else{
                 float det = dcmat.SolveDeterminant(matrix->matrix);
-                std::cout << std::fixed << std::setprecision(precision) << det << std::endl;
+                std::cout << "\n" << std::fixed << std::setprecision(precision) << det << "\n\n";
             }
         }else{
-            std::cout << "No Function defined!\n";
+            std::cout << "\nNo Function defined!\n\n";
         }
     }
 #line 1425 "dcmat.tab.c"
@@ -1429,12 +1429,12 @@ yyreduce:
                                     {
         if(matrix){
             if(matrix->matrix->lines != matrix->matrix->columns-1){
-                std::cout << "Matrix format incorrect!\n";
+                std::cout << "\nMatrix format incorrect!\n\n";
             }else{
                 dcmat.SolveLinearSystem(matrix->matrix);
             }
         }else{
-            std::cout << "No Function defined!\n";
+            std::cout << "\nNo Function defined!\n\n";
         }
     }
 #line 1441 "dcmat.tab.c"
@@ -1450,7 +1450,7 @@ yyreduce:
                 dcmat.ShowMatrix(exp->matrix);
             }else{
 
-            std::cout << std::fixed << std::setprecision(precision) << exp->value << "\n"; 
+            std::cout << "\n" << std::fixed << std::setprecision(precision) << exp->value << "\n\n"; 
             }
         }
         else{ std::cout << "\nThe x variable cannot be present on expressions.\n" << std::endl;}}
@@ -1466,7 +1466,7 @@ yyreduce:
             function = (yyvsp[-2].expValue);
             dcmat.PlotChart(function);
         }else{
-            std::cout << "No Function defined!\n";
+            std::cout << "\nNo Function defined!\n\n";
         }
     }
 #line 1473 "dcmat.tab.c"
@@ -1478,7 +1478,7 @@ yyreduce:
         if(function){
             dcmat.PlotChart(function);
         }else{
-            std::cout << "No Function defined!\n";
+            std::cout << "\nNo Function defined!\n\n";
         }
     }
 #line 1485 "dcmat.tab.c"
