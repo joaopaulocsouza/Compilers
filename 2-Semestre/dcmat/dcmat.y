@@ -213,18 +213,23 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
             std::cout << "\nNo Function defined!\n\n";
         }
     }
-    | Expressao { Expressao *exp = $1; 
-        if(hasUndeclared){
-            PrintUndeclareds();
-        }else if(exp->element != FUNCTION_KEY){
-            if(exp->type == MATRIX_KEY){
-                dcmat.ShowMatrix(exp->matrix);
-            }else{
+    | Expressao { 
+        if($1 != nullptr){
+            Expressao *exp = $1; 
+            if(hasUndeclared){
+                PrintUndeclareds();
+            }else if(exp->element != FUNCTION_KEY){
+                if(exp->type == MATRIX_KEY){
+                    dcmat.ShowMatrix(exp->matrix);
+                }else{
 
-            std::cout << "\n" << std::fixed << std::setprecision(precision) << exp->value << "\n\n"; 
+                std::cout << "\n" << std::fixed << std::setprecision(precision) << exp->value << "\n\n"; 
+                }
+            }
+            else{ 
+                std::cout << "\nThe x variable cannot be present on expressions.\n" << std::endl;}
             }
         }
-        else{ std::cout << "\nThe x variable cannot be present on expressions.\n" << std::endl;}}
     | PLOT L_PAREN Expressao R_PAREN SEMICOLON {
         if(hasUndeclared){
             PrintUndeclareds();
@@ -363,35 +368,49 @@ Set: FLOAT PRECISION Limit[value] SEMICOLON {
 Expressao: ExpressionSumSub {$$ = $1;};
 
 ExpressionSumSub: ExpressionSumSub ADD ExpressionMulDiv {
-                        $$ = expressao.CreateExp(ADD_KEY, $1, $3);    
+                        $$ = ($1 == nullptr || $3 == nullptr)? nullptr:expressao.CreateExp(ADD_KEY, $1, $3);    
                 };
                 | ExpressionSumSub SUBTRACT ExpressionMulDiv {
-                        $$ = expressao.CreateExp(SUB_KEY, $1, $3);    
+                        $$ = ($1 == nullptr || $3 == nullptr)? nullptr:expressao.CreateExp(SUB_KEY, $1, $3);    
                 };
                 | ExpressionMulDiv {$$ = $1;};
 
 ExpressionMulDiv: ExpressionMulDiv MULTIPLY ExpressionPowRem {
-                        $$ = expressao.CreateExp(MULTIPLY_KEY, $1, $3);    
+                        $$ = ($1 == nullptr || $3 == nullptr)? nullptr:expressao.CreateExp(MULTIPLY_KEY, $1, $3);    
                 };
                 | ExpressionMulDiv DIV ExpressionPowRem {
-                        $$ = expressao.CreateExp(DIV_KEY, $1, $3);    
+                        $$ = ($1 == nullptr || $3 == nullptr)? nullptr:expressao.CreateExp(DIV_KEY, $1, $3);    
                 };
                 | ExpressionPowRem {$$ = $1;};
 
 ExpressionPowRem: ExpressionPowRem POW Signal {
-                        $$ = expressao.CreateExp(POW_KEY, $1, $3);    
+                        $$ = ($1 == nullptr || $3 == nullptr)? nullptr:expressao.CreateExp(POW_KEY, $1, $3);    
                 };
                 | ExpressionPowRem REST Signal {
-                        $$ = expressao.CreateExp(REST, $1, $3);    
+                        $$ = ($1 == nullptr || $3 == nullptr)? nullptr:expressao.CreateExp(REST, $1, $3);    
                 };
                 | Signal {$$ = $1;};
 
 Signal: Termo {$$ = $1;};
         | ADD Termo {$$ = $2;};
         | SUBTRACT Termo {
-            if($2->type == VAR_KEY) $2->type = SUBVAR_KEY;
-            if($2->element != FUNCTION_KEY) $2->value = -$2->value;
-            $$ = $2;
+            Expressao *exp = expressao.CreateMatrix($2->matrix);
+            switch(exp->type){
+                case VAR_KEY:
+                    exp->type = SUBVAR_KEY;
+                    break;
+                case MATRIX_KEY:
+                    for(int i = 0; i < exp->matrix->lines; i++){
+                        for(int j = 0; j < exp->matrix->columns; j++){
+                            exp->matrix->matrix[i][j] *= -1; 
+                        }
+                    }
+                    break;
+                default:
+                    if(exp->element != FUNCTION_KEY) exp->value = -exp->value;
+                    break;
+            }
+            $$ = exp;
         }
 
 Termo: IDENTIFIER {
@@ -407,28 +426,48 @@ Termo: IDENTIFIER {
             }};
         | Value {$$ = $1;};
         | SEN L_PAREN Expressao R_PAREN { 
-                float value = 0;
-                int element = $3->element;
-                if($3->element != FUNCTION_KEY)value = sin($3->value);
-                $$ = expressao.CreateSheet($3->type, SEN_KEY, value, $3, element);
+                if($3->type == MATRIX_KEY){
+                    std::cout << "\nIncorrect type for operator ’SEN’ - have MATRIX\n\n";
+                    $$ = nullptr;
+                }else{
+                    float value = 0;
+                    int element = $3->element;
+                    if($3->element != FUNCTION_KEY)value = sin($3->value);
+                    $$ = expressao.CreateSheet($3->type, SEN_KEY, value, $3, element);
+                }
             }
         | COS L_PAREN Expressao R_PAREN  { 
-                float value = 0;
-                int element = $3->element;
-                if($3->element != FUNCTION_KEY) value = cos($3->value);
-                $$ = expressao.CreateSheet($3->type, COS_KEY, value, $3, element);
+                if($3->type == MATRIX_KEY){
+                    std::cout << "\nIncorrect type for operator ’COS’ - have MATRIX\n\n";
+                    $$ = nullptr;
+                }else{
+                    float value = 0;
+                    int element = $3->element;
+                    if($3->element != FUNCTION_KEY) value = cos($3->value);
+                    $$ = expressao.CreateSheet($3->type, COS_KEY, value, $3, element);
+                }
             }
         | TAN L_PAREN Expressao R_PAREN  { 
-                float value = 0;
-                int element = $3->element;
-                if($3->element != FUNCTION_KEY) value = tan($3->value);
-                $$ = expressao.CreateSheet($3->type, TAN_KEY, value, $3, element);
+                if($3->type == MATRIX_KEY){
+                    std::cout << "\nIncorrect type for operator ’TAN’ - have MATRIX\n\n";
+                    $$ = nullptr;
+                }else{
+                    float value = 0;
+                    int element = $3->element;
+                    if($3->element != FUNCTION_KEY) value = tan($3->value);
+                    $$ = expressao.CreateSheet($3->type, TAN_KEY, value, $3, element);
+                }
             }
         | ABS L_PAREN Expressao R_PAREN { 
-                float value = 0;
-                int element = $3->element;
-                if($3->element != FUNCTION_KEY) value = abs($3->value);
-                $$ = expressao.CreateSheet($3->type, ABS_KEY, value, $3, element);
+                if($3->type == MATRIX_KEY){
+                    std::cout << "\nIncorrect type for operator ’ABS’ - have MATRIX\n\n";
+                    $$ = nullptr;
+                }else{
+                    float value = 0;
+                    int element = $3->element;
+                    if($3->element != FUNCTION_KEY) value = abs($3->value);
+                    $$ = expressao.CreateSheet($3->type, ABS_KEY, value, $3, element);
+                }
             }
 
 Limit: NumFloat {$$ = $1;};

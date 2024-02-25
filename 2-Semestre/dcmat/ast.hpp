@@ -120,8 +120,11 @@ class Expressao {
 
         Expressao *CreateExp(int oper, Expressao *termo, Expressao *exp){
             Expressao *new_exp = new Expressao(); 
+            MatrixClass *new_matrix = new MatrixClass();
             
-            if(termo->type == FLOAT_KEY || exp->type ==FLOAT_KEY){
+            if(termo->type == MATRIX_KEY || exp->type ==MATRIX_KEY){
+                new_exp->type = MATRIX_KEY;
+            }else if(termo->type == FLOAT_KEY || exp->type ==FLOAT_KEY){
                 new_exp->type = FLOAT_KEY; 
             }else{
                 new_exp->type = INT_KEY;
@@ -130,7 +133,89 @@ class Expressao {
             new_exp->oper = oper; 
             new_exp->left = termo; 
             new_exp->right = exp;
-            if(termo->type == FLOAT_KEY ||termo->type == INT_KEY ||
+            if(termo->type == MATRIX_KEY || exp->type == MATRIX_KEY){
+                switch (oper) {
+                    case ADD_KEY:
+                        if(termo->type == MATRIX_KEY && (exp->type == INT_KEY || exp->type == FLOAT_KEY)){
+                            std::cout << "\nIncorrect type for operator ’+’ - have MATRIX and FLOAT\n\n"; return nullptr;
+                        }
+                        if(exp->type == MATRIX_KEY && (termo->type == INT_KEY || termo->type == FLOAT_KEY)){
+                            std::cout << "\nIncorrect type for operator ’+’ - have FLOAT and MATRIX\n\n"; return nullptr;
+                        }
+                        if(termo->type != MATRIX_KEY || exp->type != MATRIX_KEY){
+                            return nullptr;
+                        }
+                        if(exp->matrix->lines != termo->matrix->lines || exp->matrix->columns != termo->matrix->columns){
+                            std::cout << "\nIncorrect dimensions for operator ’+’ - have MATRIX ["<< termo->matrix->lines <<"][" << termo->matrix->columns <<"] and MATRIX ["<< exp->matrix->lines <<"][" << exp->matrix->columns << "]\n\n";
+                            return nullptr;
+                        }
+                        for(int i = 0; i < termo->matrix->lines; i++){
+                            for(int j = 0; j < termo->matrix->columns; j++){
+                                new_matrix->line.push_back(termo->matrix->matrix[i][j] + exp->matrix->matrix[i][j]);
+                            }
+                            new_matrix->matrix.push_back(new_matrix->line);
+                            new_matrix->line.clear();
+                        }
+                        new_exp->matrix = new_matrix;
+                        new_exp->matrix->lines = termo->matrix->lines; new_exp->matrix->columns =  termo->matrix->columns;
+                        break;
+                    case SUB_KEY:
+                        if(termo->type == MATRIX_KEY && (exp->type == INT_KEY || exp->type == FLOAT_KEY)){
+                            std::cout << "\nIncorrect type for operator ’-’ - have MATRIX and FLOAT\n\n"; return nullptr;
+                        }
+                        if(exp->type == MATRIX_KEY && (termo->type == INT_KEY || termo->type == FLOAT_KEY)){
+                            std::cout << "\nIncorrect type for operator ’-’ - have FLOAT and MATRIX\n\n"; return nullptr;
+                        }
+                        if(termo->type != MATRIX_KEY || exp->type != MATRIX_KEY){
+                            return nullptr;
+                        }
+                        if(exp->matrix->lines != termo->matrix->lines || exp->matrix->columns != termo->matrix->columns){
+                            std::cout << "\nIncorrect dimensions for operator ’-’ - have MATRIX ["<< termo->matrix->lines <<"][" << termo->matrix->columns <<"] and MATRIX ["<< exp->matrix->lines <<"][" << exp->matrix->columns << "]\n\n";
+                            return nullptr;
+                        }
+                        for(int i = 0; i < termo->matrix->lines; i++){
+                            for(int j = 0; j < termo->matrix->columns; j++){
+                                new_matrix->line.push_back(termo->matrix->matrix[i][j] - exp->matrix->matrix[i][j]);
+                            }
+                            new_matrix->matrix.push_back(new_matrix->line);
+                            new_matrix->line.clear();
+                        }
+                        new_exp->matrix = new_matrix;
+                        new_exp->matrix->lines = termo->matrix->lines; new_exp->matrix->columns =  termo->matrix->columns;
+                        break;
+
+                    case MULTIPLY_KEY:
+                        if(termo->type == MATRIX_KEY && (exp->type == INT_KEY || exp->type == FLOAT_KEY)){
+                            for(int i = 0; i < termo->matrix->lines; i++){
+                                MatrixClass *line = new MatrixClass();
+                                for(int j = 0; j < termo->matrix->columns; j++){
+                                    line->line.push_back(termo->matrix->matrix[i][j] * exp->value);
+                                }
+                                new_matrix->matrix.push_back(line->line);
+                            }
+                            new_exp->matrix = new_matrix;
+                            new_exp->matrix->lines = termo->matrix->lines; new_exp->matrix->columns = termo->matrix->columns;
+                            break;
+                        }else if(exp->type == MATRIX_KEY && (termo->type == INT_KEY || termo->type == FLOAT_KEY)){
+                            
+                            for(int i = 0; i < exp->matrix->lines; i++){
+                                for(int j = 0; j < exp->matrix->columns; j++){
+                                    new_matrix->line.push_back(exp->matrix->matrix[i][j] * termo->value);
+                                }
+                                new_matrix->matrix.push_back(new_matrix->line);
+                                new_matrix->line.clear();
+                            }
+                            new_exp->matrix = new_matrix;
+                            new_exp->matrix->lines = exp->matrix->lines; new_exp->matrix->columns = exp->matrix->columns;
+                        }else{
+                            if(termo->matrix->columns != exp->matrix->lines){
+                                std::cout << "\nIncorrect dimensions for operator ’*’ - have MATRIX ["<< termo->matrix->lines <<"][" << termo->matrix->columns <<"] and MATRIX ["<< exp->matrix->lines <<"][" << exp->matrix->columns << "]\n\n";
+                                return nullptr;
+                            }
+                        }
+                        break;
+                }
+            }else if(termo->type == FLOAT_KEY ||termo->type == INT_KEY ||
                 exp->type == FLOAT_KEY ||exp->type == INT_KEY ){
                 switch (oper) {
                     case ADD_KEY:
@@ -153,6 +238,7 @@ class Expressao {
                         break;
                 }
             };
+
             if(termo->element == FUNCTION_KEY || exp->element == FUNCTION_KEY){ 
                 new_exp->element = FUNCTION_KEY;
             }else{

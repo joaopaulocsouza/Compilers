@@ -106,15 +106,15 @@ void DCMAT::ShowSymbols(){
 };
 
 
- double TransformPoint(double y) {
-    double new_y = 0+((y - v_view_lo) * 24) / (v_view_hi - v_view_lo);
+ float TransformPoint(float y) {
+    float new_y = 0+((y - v_view_lo) * 24) / (v_view_hi - v_view_lo);
     return new_y;
 }
 
 void DCMAT::PlotChart(Expressao *exp){
 
-    double h = (h_view_hi - h_view_lo) / 80;
-    double v = (v_view_hi - v_view_lo) / 25;
+    float h = (h_view_hi - h_view_lo) / 80;
+    float v = (v_view_hi - v_view_lo) / 25;
 
     if(Erase_Plot){
         for(int i = 0; i<80;i++){
@@ -142,7 +142,7 @@ void DCMAT::PlotChart(Expressao *exp){
     };
 
     for(int i = 0; i<80;i++){
-       double y = -exp->CalcFunctionValue(i*h + h_view_lo, exp);
+       float y = -exp->CalcFunctionValue(i*h + h_view_lo, exp);
        auto yTranformed = TransformPoint( y);
        if(y >= v_view_lo && y <= v_view_hi){
             Chart[(int)yTranformed][i] = "*";
@@ -192,7 +192,7 @@ void DCMAT::ShowMatrix(MatrixClass *matrix){
         if(isNegative) lineSize += 1;
     }
 
-    std::cout << "+-";
+    std::cout << "\n+-";
     for(int k = 0; k < lineSize; k++) std::cout << " ";
     for(int i = 0; i < matrix->lines; i++) if(isNegative[i]) {std::cout << " ";};
     std::cout << "-+\n";
@@ -216,7 +216,7 @@ void DCMAT::ShowMatrix(MatrixClass *matrix){
     }
 
 
-    std::cout << "\n+-";
+    std::cout << "+-";
     for(int k = 0; k < lineSize; k++) std::cout << " ";
     for(int i = 0; i < matrix->lines; i++) if(isNegative[i]) {std::cout << " ";};
     std::cout << "-+\n\n";
@@ -290,7 +290,7 @@ void DCMAT::SolveLinearSystem(MatrixClass *matrix){
     for (int i = 0; i < matrix->lines; ++i) {
         L[i][i] = 1;
         for (int j = i + 1; j < matrix->lines; ++j) {
-            double ratio = U[j][i] / U[i][i];
+            float ratio = U[j][i] / U[i][i];
             L[j][i] = ratio;
             for (int k = i; k < matrix->lines+1; ++k) {
                 U[j][k] -= ratio * U[i][k];
@@ -301,7 +301,7 @@ void DCMAT::SolveLinearSystem(MatrixClass *matrix){
     std::vector<float> y(matrix->lines);
 
     for (int i = 0; i < matrix->lines; ++i) {
-        double sum = 0;
+        float sum = 0;
         for (int j = 0; j < i; ++j) {
             sum += L[i][j] * y[j];
         }
@@ -311,7 +311,7 @@ void DCMAT::SolveLinearSystem(MatrixClass *matrix){
     
     std::vector<float> result(matrix->lines);
     for (int i = matrix->lines - 1; i >= 0; --i) {
-        double sum = 0;
+        float sum = 0;
         for (int j = i + 1; j < matrix->lines; ++j) {
             sum += U[i][j] * result[j];
         }
