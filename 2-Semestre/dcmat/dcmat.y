@@ -394,23 +394,25 @@ ExpressionPowRem: ExpressionPowRem POW Signal {
 Signal: Termo {$$ = $1;};
         | ADD Termo {$$ = $2;};
         | SUBTRACT Termo {
-            Expressao *exp = expressao.CreateMatrix($2->matrix);
-            switch(exp->type){
-                case VAR_KEY:
-                    exp->type = SUBVAR_KEY;
-                    break;
-                case MATRIX_KEY:
-                    for(int i = 0; i < exp->matrix->lines; i++){
-                        for(int j = 0; j < exp->matrix->columns; j++){
-                            exp->matrix->matrix[i][j] *= -1; 
-                        }
+            if($2->type == MATRIX_KEY){
+                Expressao *exp = expressao.CreateMatrix($2->matrix);
+                for(int i = 0; i < exp->matrix->lines; i++){
+                    for(int j = 0; j < exp->matrix->columns; j++){
+                        exp->matrix->matrix[i][j] *= -1; 
                     }
-                    break;
-                default:
-                    if(exp->element != FUNCTION_KEY) exp->value = -exp->value;
-                    break;
+                }
+                $$ = exp;
+            }else{
+                switch($2->type){
+                    case VAR_KEY:
+                        $2->type = SUBVAR_KEY;
+                        break;
+                    default:
+                        if($2->element != FUNCTION_KEY) $2->value = -$2->value;
+                        break;
+                }
+                $$ = $2;
             }
-            $$ = exp;
         }
 
 Termo: IDENTIFIER {

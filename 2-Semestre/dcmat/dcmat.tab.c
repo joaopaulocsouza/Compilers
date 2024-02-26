@@ -599,9 +599,9 @@ static const yytype_int16 yyrline[] =
      146,   147,   162,   172,   181,   193,   205,   216,   233,   243,
      250,   259,   270,   276,   292,   303,   305,   316,   327,   330,
      337,   345,   353,   356,   359,   368,   370,   373,   376,   378,
-     381,   384,   386,   389,   392,   394,   395,   396,   416,   427,
-     428,   439,   450,   461,   473,   474,   475,   476,   477,   478,
-     480,   481,   482,   485,   486,   487,   491,   495,   497,   498
+     381,   384,   386,   389,   392,   394,   395,   396,   418,   429,
+     430,   441,   452,   463,   475,   476,   477,   478,   479,   480,
+     482,   483,   484,   487,   488,   489,   493,   497,   499,   500
 };
 #endif
 
@@ -1760,29 +1760,31 @@ yyreduce:
   case 47: /* Signal: SUBTRACT Termo  */
 #line 396 "dcmat.y"
                          {
-            Expressao *exp = expressao.CreateMatrix((yyvsp[0].expValue)->matrix);
-            switch(exp->type){
-                case VAR_KEY:
-                    exp->type = SUBVAR_KEY;
-                    break;
-                case MATRIX_KEY:
-                    for(int i = 0; i < exp->matrix->lines; i++){
-                        for(int j = 0; j < exp->matrix->columns; j++){
-                            exp->matrix->matrix[i][j] *= -1; 
-                        }
+            if((yyvsp[0].expValue)->type == MATRIX_KEY){
+                Expressao *exp = expressao.CreateMatrix((yyvsp[0].expValue)->matrix);
+                for(int i = 0; i < exp->matrix->lines; i++){
+                    for(int j = 0; j < exp->matrix->columns; j++){
+                        exp->matrix->matrix[i][j] *= -1; 
                     }
-                    break;
-                default:
-                    if(exp->element != FUNCTION_KEY) exp->value = -exp->value;
-                    break;
+                }
+                (yyval.expValue) = exp;
+            }else{
+                switch((yyvsp[0].expValue)->type){
+                    case VAR_KEY:
+                        (yyvsp[0].expValue)->type = SUBVAR_KEY;
+                        break;
+                    default:
+                        if((yyvsp[0].expValue)->element != FUNCTION_KEY) (yyvsp[0].expValue)->value = -(yyvsp[0].expValue)->value;
+                        break;
+                }
+                (yyval.expValue) = (yyvsp[0].expValue);
             }
-            (yyval.expValue) = exp;
         }
-#line 1782 "dcmat.tab.c"
+#line 1784 "dcmat.tab.c"
     break;
 
   case 48: /* Termo: IDENTIFIER  */
-#line 416 "dcmat.y"
+#line 418 "dcmat.y"
                   {
             result = dcmat.FindHashItem((yyvsp[0].stringValue));
             if(result.exists){
@@ -1794,17 +1796,17 @@ yyreduce:
                 hasUndeclared = true;
                 undeclared->vetor.push_back((yyvsp[0].stringValue));
             }}
-#line 1798 "dcmat.tab.c"
+#line 1800 "dcmat.tab.c"
     break;
 
   case 49: /* Termo: Value  */
-#line 427 "dcmat.y"
+#line 429 "dcmat.y"
                 {(yyval.expValue) = (yyvsp[0].expValue);}
-#line 1804 "dcmat.tab.c"
+#line 1806 "dcmat.tab.c"
     break;
 
   case 50: /* Termo: SEN L_PAREN Expressao R_PAREN  */
-#line 428 "dcmat.y"
+#line 430 "dcmat.y"
                                         { 
                 if((yyvsp[-1].expValue)->type == MATRIX_KEY){
                     std::cout << "\nIncorrect type for operator ’SEN’ - have MATRIX\n\n";
@@ -1816,11 +1818,11 @@ yyreduce:
                     (yyval.expValue) = expressao.CreateSheet((yyvsp[-1].expValue)->type, SEN_KEY, value, (yyvsp[-1].expValue), element);
                 }
             }
-#line 1820 "dcmat.tab.c"
+#line 1822 "dcmat.tab.c"
     break;
 
   case 51: /* Termo: COS L_PAREN Expressao R_PAREN  */
-#line 439 "dcmat.y"
+#line 441 "dcmat.y"
                                          { 
                 if((yyvsp[-1].expValue)->type == MATRIX_KEY){
                     std::cout << "\nIncorrect type for operator ’COS’ - have MATRIX\n\n";
@@ -1832,11 +1834,11 @@ yyreduce:
                     (yyval.expValue) = expressao.CreateSheet((yyvsp[-1].expValue)->type, COS_KEY, value, (yyvsp[-1].expValue), element);
                 }
             }
-#line 1836 "dcmat.tab.c"
+#line 1838 "dcmat.tab.c"
     break;
 
   case 52: /* Termo: TAN L_PAREN Expressao R_PAREN  */
-#line 450 "dcmat.y"
+#line 452 "dcmat.y"
                                          { 
                 if((yyvsp[-1].expValue)->type == MATRIX_KEY){
                     std::cout << "\nIncorrect type for operator ’TAN’ - have MATRIX\n\n";
@@ -1848,11 +1850,11 @@ yyreduce:
                     (yyval.expValue) = expressao.CreateSheet((yyvsp[-1].expValue)->type, TAN_KEY, value, (yyvsp[-1].expValue), element);
                 }
             }
-#line 1852 "dcmat.tab.c"
+#line 1854 "dcmat.tab.c"
     break;
 
   case 53: /* Termo: ABS L_PAREN Expressao R_PAREN  */
-#line 461 "dcmat.y"
+#line 463 "dcmat.y"
                                         { 
                 if((yyvsp[-1].expValue)->type == MATRIX_KEY){
                     std::cout << "\nIncorrect type for operator ’ABS’ - have MATRIX\n\n";
@@ -1864,111 +1866,111 @@ yyreduce:
                     (yyval.expValue) = expressao.CreateSheet((yyvsp[-1].expValue)->type, ABS_KEY, value, (yyvsp[-1].expValue), element);
                 }
             }
-#line 1868 "dcmat.tab.c"
+#line 1870 "dcmat.tab.c"
     break;
 
   case 54: /* Limit: NumFloat  */
-#line 473 "dcmat.y"
+#line 475 "dcmat.y"
                 {(yyval.floatValue) = (yyvsp[0].floatValue);}
-#line 1874 "dcmat.tab.c"
+#line 1876 "dcmat.tab.c"
     break;
 
   case 55: /* Limit: ADD NumFloat  */
-#line 474 "dcmat.y"
+#line 476 "dcmat.y"
                        {(yyval.floatValue) = (yyvsp[0].floatValue);}
-#line 1880 "dcmat.tab.c"
+#line 1882 "dcmat.tab.c"
     break;
 
   case 56: /* Limit: SUBTRACT NumFloat  */
-#line 475 "dcmat.y"
+#line 477 "dcmat.y"
                             { (yyval.floatValue) = -(yyvsp[0].floatValue); }
-#line 1886 "dcmat.tab.c"
+#line 1888 "dcmat.tab.c"
     break;
 
   case 57: /* Limit: NumInt  */
-#line 476 "dcmat.y"
+#line 478 "dcmat.y"
                  {(yyval.floatValue) = (yyvsp[0].integerValue);}
-#line 1892 "dcmat.tab.c"
+#line 1894 "dcmat.tab.c"
     break;
 
   case 58: /* Limit: ADD NumInt  */
-#line 477 "dcmat.y"
+#line 479 "dcmat.y"
                      {(yyval.floatValue) = (yyvsp[0].integerValue);}
-#line 1898 "dcmat.tab.c"
+#line 1900 "dcmat.tab.c"
     break;
 
   case 59: /* Limit: SUBTRACT NumInt  */
-#line 478 "dcmat.y"
+#line 480 "dcmat.y"
                           {(yyval.floatValue) = -(yyvsp[0].integerValue);}
-#line 1904 "dcmat.tab.c"
+#line 1906 "dcmat.tab.c"
     break;
 
   case 60: /* Value: NumInt  */
-#line 480 "dcmat.y"
+#line 482 "dcmat.y"
               { (yyval.expValue) = expressao.CreateSheet(INT_KEY, OP, (yyvsp[0].integerValue), nullptr); }
-#line 1910 "dcmat.tab.c"
+#line 1912 "dcmat.tab.c"
     break;
 
   case 61: /* Value: NumFloat  */
-#line 481 "dcmat.y"
+#line 483 "dcmat.y"
                { (yyval.expValue) = expressao.CreateSheet(FLOAT_KEY, OP, (yyvsp[0].floatValue), nullptr); }
-#line 1916 "dcmat.tab.c"
+#line 1918 "dcmat.tab.c"
     break;
 
   case 62: /* Value: L_PAREN Expressao R_PAREN  */
-#line 482 "dcmat.y"
+#line 484 "dcmat.y"
                                 { 
         int element = (yyvsp[-1].expValue)->element;
         (yyval.expValue) = expressao.CreateSheet((yyvsp[-1].expValue)->type, EXP_KEY, (yyvsp[-1].expValue)->value, (yyvsp[-1].expValue), element) ;}
-#line 1924 "dcmat.tab.c"
+#line 1926 "dcmat.tab.c"
     break;
 
   case 63: /* Value: VAR  */
-#line 485 "dcmat.y"
+#line 487 "dcmat.y"
           {(yyval.expValue) = expressao.CreateSheet(VAR_KEY, OP, 0, nullptr); }
-#line 1930 "dcmat.tab.c"
+#line 1932 "dcmat.tab.c"
     break;
 
   case 64: /* Value: PI  */
-#line 486 "dcmat.y"
+#line 488 "dcmat.y"
          { (yyval.expValue) = expressao.CreateSheet(FLOAT_KEY, OP, pi, nullptr); }
-#line 1936 "dcmat.tab.c"
+#line 1938 "dcmat.tab.c"
     break;
 
   case 65: /* Value: E  */
-#line 487 "dcmat.y"
+#line 489 "dcmat.y"
          { (yyval.expValue) = expressao.CreateSheet(FLOAT_KEY, OP, euler, nullptr); }
-#line 1942 "dcmat.tab.c"
+#line 1944 "dcmat.tab.c"
     break;
 
   case 66: /* NumInt: INT  */
-#line 491 "dcmat.y"
+#line 493 "dcmat.y"
               {
             (yyval.integerValue) = (yyvsp[0].integerValue);
         }
-#line 1950 "dcmat.tab.c"
+#line 1952 "dcmat.tab.c"
     break;
 
   case 67: /* NumFloat: REAL  */
-#line 495 "dcmat.y"
+#line 497 "dcmat.y"
                { (yyval.floatValue) = (yyvsp[0].floatValue); }
-#line 1956 "dcmat.tab.c"
+#line 1958 "dcmat.tab.c"
     break;
 
   case 68: /* Bool: ON  */
-#line 497 "dcmat.y"
+#line 499 "dcmat.y"
          { (yyval.boolValue) = true; }
-#line 1962 "dcmat.tab.c"
+#line 1964 "dcmat.tab.c"
     break;
 
   case 69: /* Bool: OFF  */
-#line 498 "dcmat.y"
+#line 500 "dcmat.y"
           { (yyval.boolValue) = false; }
-#line 1968 "dcmat.tab.c"
+#line 1970 "dcmat.tab.c"
     break;
 
 
-#line 1972 "dcmat.tab.c"
+#line 1974 "dcmat.tab.c"
 
       default: break;
     }
@@ -2161,7 +2163,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 500 "dcmat.y"
+#line 502 "dcmat.y"
 
 
 void expectedDelaration(){
