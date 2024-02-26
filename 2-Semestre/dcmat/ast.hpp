@@ -199,18 +199,37 @@ class Expressao {
                         }else if(exp->type == MATRIX_KEY && (termo->type == INT_KEY || termo->type == FLOAT_KEY)){
                             
                             for(int i = 0; i < exp->matrix->lines; i++){
+                                MatrixClass *line = new MatrixClass();
                                 for(int j = 0; j < exp->matrix->columns; j++){
-                                    new_matrix->line.push_back(exp->matrix->matrix[i][j] * termo->value);
+                                    line->line.push_back(exp->matrix->matrix[i][j] * termo->value);
                                 }
-                                new_matrix->matrix.push_back(new_matrix->line);
-                                new_matrix->line.clear();
+                                new_matrix->matrix.push_back(line->line);
                             }
                             new_exp->matrix = new_matrix;
                             new_exp->matrix->lines = exp->matrix->lines; new_exp->matrix->columns = exp->matrix->columns;
+                            break;
                         }else{
                             if(termo->matrix->columns != exp->matrix->lines){
                                 std::cout << "\nIncorrect dimensions for operator ’*’ - have MATRIX ["<< termo->matrix->lines <<"][" << termo->matrix->columns <<"] and MATRIX ["<< exp->matrix->lines <<"][" << exp->matrix->columns << "]\n\n";
                                 return nullptr;
+                            }else{
+
+                                std::cout << "\n\n" << exp->matrix->columns << "\n\n";
+
+                                for(int i = 0; i < termo->matrix->lines; i++){
+                                    MatrixClass *line = new MatrixClass();
+                                    std::vector<float> result(exp->matrix->columns, 0);  
+                                    for(int j = 0; j < exp->matrix->columns; j++){
+                                        for(int k = 0; k < termo->matrix->columns; k++){
+                                            result[j] += termo->matrix->matrix[i][k] * exp->matrix->matrix[k][j];
+                                        }
+                                    }
+                                    line->line = result;
+                                    new_matrix->matrix.push_back(line->line);
+                                }
+                                new_exp->matrix = new_matrix;
+                                new_exp->matrix->lines = termo->matrix->lines; new_exp->matrix->columns = exp->matrix->columns;
+                                break;
                             }
                         }
                         break;
