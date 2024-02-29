@@ -55,6 +55,7 @@ void DCMAT::CreateHashItem(char *name, Expressao *exp, int type){
        for(int i = 0; i < hash[ascii].size(); i++){
             if(hash[ascii][i].name == name){
                 hash[ascii][i].value = exp;
+                hash[ascii][i].type = type;
                 return;
             }
        };
@@ -328,12 +329,12 @@ void DCMAT::SolveLinearSystem(MatrixClass *matrix){
     for (int i = 0; i < matrix->lines; i++){
         hasNullLine = true;
         for (int j = 0; j < matrix->lines; j++){
-            if(U[i][j] != 0){
+            if(U[j][j] != 0){
                 hasNullLine = false;
                 break;
             }
+            if(!hasNullLine) break;
         }
-        if(hasNullLine) break;
     }
 
     if(verify == matrix->lines){
@@ -406,8 +407,8 @@ void DCMAT::ReversePolishNotation(Expressao *exp){
                         std::cout << exp->id  << " "; break; 
                     }else{
                         std::cout << std::fixed << std::setprecision(precision) << exp->value << " ";
-                    }
-                    std::cout << exp->id  << " "; break; 
+                        break;
+                    } 
                 case ID_KEY:
                     std::cout << exp->id << " "; 
                 }

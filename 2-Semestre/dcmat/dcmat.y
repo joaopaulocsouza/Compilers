@@ -33,6 +33,7 @@
     extern int yyleng;
     void yyerror(const void *s);
     void PrintUndeclareds();
+    bool stopPrint = false;
 %}
 
 %code requires {
@@ -122,9 +123,9 @@
 
 %%
 
-Dcmat: EOL {return 0;}
+Dcmat: EOL {stopPrint = false; return 0;}
     | QUIT EOL {exit(0);}
-    | Command EOL { hasUndeclared = false; undeclared->vetor.clear() ;return 0;}
+    | Command EOL {stopPrint = false; hasUndeclared = false; undeclared->vetor.clear() ;return 0;}
 
 Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | SHOW SETTINGS SEMICOLON {dcmat.ShowSettings();}
@@ -162,20 +163,25 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | IDENTIFIER ASSIGN Expressao SEMICOLON {
         if(hasUndeclared){
             PrintUndeclareds();
-        }else{
+        }else if($3 != nullptr){
             Expressao *exp = $3;
             dcmat.CreateHashItem($1, exp, exp->type);
-            if(exp->type == FLOAT_KEY || exp->type == INT_KEY) 
+            if(exp->type == FLOAT_KEY || exp->type == INT_KEY) {
                 std::cout << "\n" << std::fixed << std::setprecision(precision) << (float)exp->value << "\n\n" ;
+            } else if(exp->type == MATRIX_KEY){
+                dcmat.ShowMatrix($3->matrix);
+            }
         };
     }
     | IDENTIFIER ASSIGN Matrix SEMICOLON{
-        if($3->lines > 10 || $3->columns > 10){
-            std::cout << "\nERROR: Matrix limits out of boundaries.\n" << std::endl;
-        }else{
-            Expressao *exp = expressao.CreateMatrix($3);
-            dcmat.CreateHashItem($1, exp, MATRIX_KEY);
-            dcmat.ShowMatrix($3);
+        if($3 != nullptr){
+            if($3->lines > 10 || $3->columns > 10){
+                std::cout << "\nERROR: Matrix limits out of boundaries.\n" << std::endl;
+            }else{
+                Expressao *exp = expressao.CreateMatrix($3);
+                dcmat.CreateHashItem($1, exp, MATRIX_KEY);
+                dcmat.ShowMatrix($3);
+            }
         }
     }
     | MATRIX EQUAL Matrix SEMICOLON{
@@ -502,24 +508,24 @@ Bool: ON { $$ = true; };
 %%
 
 void expectedDelaration(){
-     std::cout << "SYNTAX ERROR: Incomplete Command\n";
-    return;
+    std::cout << "\nSYNTAX ERROR: Incomplete Command.\n\n";
+    stopPrint = true;
 }
 
 void syntaxError(){
-    std::cout << "SYNTAX ERROR: " << yytext << "\n";
+    std::cout << "\nSYNTAX ERROR: [" << yytext << "]\n\n";   
+    stopPrint = true;
 }
 
 void yyerror(const void *s) {
-
-    if(!isLexico){
-        (yychar == 0)?expectedDelaration():syntaxError(); 
+    if(!stopPrint){
+        if(!isLexico){
+            (yychar == EOL)?expectedDelaration():syntaxError(); 
+        }
+        else{
+            isLexico = false;
+        }
     }
-    else{
-        isLexico = false;
-    }
-
-    return;
 }
 
 void PrintUndeclareds(){
@@ -533,7 +539,7 @@ void PrintUndeclareds(){
 
 int main(int argc, char **argv) {
     while(1){
-        printf("> ");
+        if(!stopPrint)printf("> ");
         yyparse();
     }
     return 0;

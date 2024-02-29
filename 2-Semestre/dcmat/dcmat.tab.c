@@ -103,8 +103,9 @@
     extern int yyleng;
     void yyerror(const void *s);
     void PrintUndeclareds();
+    bool stopPrint = false;
 
-#line 108 "dcmat.tab.c"
+#line 109 "dcmat.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -595,13 +596,13 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   125,   125,   126,   127,   129,   130,   131,   137,   138,
-     146,   147,   162,   172,   181,   193,   205,   216,   233,   243,
-     250,   259,   270,   276,   292,   303,   305,   316,   327,   330,
-     337,   345,   353,   356,   359,   368,   370,   373,   376,   378,
-     381,   384,   386,   389,   392,   394,   395,   396,   418,   429,
-     430,   441,   452,   463,   475,   476,   477,   478,   479,   480,
-     482,   483,   484,   487,   488,   489,   493,   497,   499,   500
+       0,   126,   126,   127,   128,   130,   131,   132,   138,   139,
+     147,   148,   163,   176,   187,   199,   211,   222,   239,   249,
+     256,   265,   276,   282,   298,   309,   311,   322,   333,   336,
+     343,   351,   359,   362,   365,   374,   376,   379,   382,   384,
+     387,   390,   392,   395,   398,   400,   401,   402,   424,   435,
+     436,   447,   458,   469,   481,   482,   483,   484,   485,   486,
+     488,   489,   490,   493,   494,   495,   499,   503,   505,   506
 };
 #endif
 
@@ -1282,54 +1283,54 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* Dcmat: EOL  */
-#line 125 "dcmat.y"
-           {return 0;}
-#line 1288 "dcmat.tab.c"
+#line 126 "dcmat.y"
+           {stopPrint = false; return 0;}
+#line 1289 "dcmat.tab.c"
     break;
 
   case 3: /* Dcmat: QUIT EOL  */
-#line 126 "dcmat.y"
+#line 127 "dcmat.y"
                {exit(0);}
-#line 1294 "dcmat.tab.c"
+#line 1295 "dcmat.tab.c"
     break;
 
   case 4: /* Dcmat: Command EOL  */
-#line 127 "dcmat.y"
-                  { hasUndeclared = false; undeclared->vetor.clear() ;return 0;}
-#line 1300 "dcmat.tab.c"
+#line 128 "dcmat.y"
+                  {stopPrint = false; hasUndeclared = false; undeclared->vetor.clear() ;return 0;}
+#line 1301 "dcmat.tab.c"
     break;
 
   case 5: /* Command: SHOW SYMBOLS SEMICOLON  */
-#line 129 "dcmat.y"
+#line 130 "dcmat.y"
                                 {dcmat.ShowSymbols();}
-#line 1306 "dcmat.tab.c"
+#line 1307 "dcmat.tab.c"
     break;
 
   case 6: /* Command: SHOW SETTINGS SEMICOLON  */
-#line 130 "dcmat.y"
+#line 131 "dcmat.y"
                               {dcmat.ShowSettings();}
-#line 1312 "dcmat.tab.c"
+#line 1313 "dcmat.tab.c"
     break;
 
   case 7: /* Command: SHOW MATRIX SEMICOLON  */
-#line 131 "dcmat.y"
+#line 132 "dcmat.y"
                             {
         if(matrix != nullptr){
             dcmat.ShowMatrix(matrix->matrix);}
         else {
             std::cout << "\nNo Matrix defined!\n\n";
             }}
-#line 1323 "dcmat.tab.c"
+#line 1324 "dcmat.tab.c"
     break;
 
   case 8: /* Command: RESET SETTINGS SEMICOLON  */
-#line 137 "dcmat.y"
+#line 138 "dcmat.y"
                                {dcmat.ResetSettings();}
-#line 1329 "dcmat.tab.c"
+#line 1330 "dcmat.tab.c"
     break;
 
   case 9: /* Command: ABOUT SEMICOLON  */
-#line 138 "dcmat.y"
+#line 139 "dcmat.y"
                       {
         printf("\n+----------------------------------------------+\n");
         printf("|"); for(int i = 0; i < 46; i++) {printf(" ");}; printf("|\n");
@@ -1338,11 +1339,11 @@ yyreduce:
         printf("|"); for(int i = 0; i < 46; i++) {printf(" ");}; printf("|\n");
         printf("+----------------------------------------------+\n\n");
     }
-#line 1342 "dcmat.tab.c"
+#line 1343 "dcmat.tab.c"
     break;
 
   case 11: /* Command: IDENTIFIER SEMICOLON  */
-#line 147 "dcmat.y"
+#line 148 "dcmat.y"
                            {
         result = dcmat.FindHashItem((yyvsp[-1].stringValue));
         if(result.exists){
@@ -1358,40 +1359,45 @@ yyreduce:
             std::cout << "\nUndefined symbol\n\n";
         }
     }
-#line 1362 "dcmat.tab.c"
+#line 1363 "dcmat.tab.c"
     break;
 
   case 12: /* Command: IDENTIFIER ASSIGN Expressao SEMICOLON  */
-#line 162 "dcmat.y"
+#line 163 "dcmat.y"
                                             {
         if(hasUndeclared){
             PrintUndeclareds();
-        }else{
+        }else if((yyvsp[-1].expValue) != nullptr){
             Expressao *exp = (yyvsp[-1].expValue);
             dcmat.CreateHashItem((yyvsp[-3].stringValue), exp, exp->type);
-            if(exp->type == FLOAT_KEY || exp->type == INT_KEY) 
+            if(exp->type == FLOAT_KEY || exp->type == INT_KEY) {
                 std::cout << "\n" << std::fixed << std::setprecision(precision) << (float)exp->value << "\n\n" ;
+            } else if(exp->type == MATRIX_KEY){
+                dcmat.ShowMatrix((yyvsp[-1].expValue)->matrix);
+            }
         };
     }
-#line 1377 "dcmat.tab.c"
+#line 1381 "dcmat.tab.c"
     break;
 
   case 13: /* Command: IDENTIFIER ASSIGN Matrix SEMICOLON  */
-#line 172 "dcmat.y"
+#line 176 "dcmat.y"
                                         {
-        if((yyvsp[-1].matrixValue)->lines > 10 || (yyvsp[-1].matrixValue)->columns > 10){
-            std::cout << "\nERROR: Matrix limits out of boundaries.\n" << std::endl;
-        }else{
-            Expressao *exp = expressao.CreateMatrix((yyvsp[-1].matrixValue));
-            dcmat.CreateHashItem((yyvsp[-3].stringValue), exp, MATRIX_KEY);
-            dcmat.ShowMatrix((yyvsp[-1].matrixValue));
+        if((yyvsp[-1].matrixValue) != nullptr){
+            if((yyvsp[-1].matrixValue)->lines > 10 || (yyvsp[-1].matrixValue)->columns > 10){
+                std::cout << "\nERROR: Matrix limits out of boundaries.\n" << std::endl;
+            }else{
+                Expressao *exp = expressao.CreateMatrix((yyvsp[-1].matrixValue));
+                dcmat.CreateHashItem((yyvsp[-3].stringValue), exp, MATRIX_KEY);
+                dcmat.ShowMatrix((yyvsp[-1].matrixValue));
+            }
         }
     }
-#line 1391 "dcmat.tab.c"
+#line 1397 "dcmat.tab.c"
     break;
 
   case 14: /* Command: MATRIX EQUAL Matrix SEMICOLON  */
-#line 181 "dcmat.y"
+#line 187 "dcmat.y"
                                    {
         if((yyvsp[-1].matrixValue)->lines > 10 || (yyvsp[-1].matrixValue)->columns > 10){
             std::cout << "\nERROR: Matrix limits out of boundaries.\n" << std::endl;
@@ -1404,11 +1410,11 @@ yyreduce:
             }
         }
     }
-#line 1408 "dcmat.tab.c"
+#line 1414 "dcmat.tab.c"
     break;
 
   case 15: /* Command: SOLVE DETERMINANT SEMICOLON  */
-#line 193 "dcmat.y"
+#line 199 "dcmat.y"
                                   {
         if(matrix){
             if(matrix->matrix->lines != matrix->matrix->columns){
@@ -1421,11 +1427,11 @@ yyreduce:
             std::cout << "\nNo Function defined!\n\n";
         }
     }
-#line 1425 "dcmat.tab.c"
+#line 1431 "dcmat.tab.c"
     break;
 
   case 16: /* Command: SOLVE LINEAR_SYSTEM SEMICOLON  */
-#line 205 "dcmat.y"
+#line 211 "dcmat.y"
                                     {
         if(matrix){
             if(matrix->matrix->lines != matrix->matrix->columns-1){
@@ -1437,11 +1443,11 @@ yyreduce:
             std::cout << "\nNo Function defined!\n\n";
         }
     }
-#line 1441 "dcmat.tab.c"
+#line 1447 "dcmat.tab.c"
     break;
 
   case 17: /* Command: Expressao  */
-#line 216 "dcmat.y"
+#line 222 "dcmat.y"
                 { 
         if((yyvsp[0].expValue) != nullptr){
             Expressao *exp = (yyvsp[0].expValue); 
@@ -1459,11 +1465,11 @@ yyreduce:
                 std::cout << "\nThe x variable cannot be present on expressions.\n" << std::endl;}
             }
         }
-#line 1463 "dcmat.tab.c"
+#line 1469 "dcmat.tab.c"
     break;
 
   case 18: /* Command: PLOT L_PAREN Expressao R_PAREN SEMICOLON  */
-#line 233 "dcmat.y"
+#line 239 "dcmat.y"
                                                {
         if(hasUndeclared){
             PrintUndeclareds();
@@ -1474,11 +1480,11 @@ yyreduce:
             std::cout << "\nNo Function defined!\n\n";
         }
     }
-#line 1478 "dcmat.tab.c"
+#line 1484 "dcmat.tab.c"
     break;
 
   case 19: /* Command: PLOT SEMICOLON  */
-#line 243 "dcmat.y"
+#line 249 "dcmat.y"
                      {
         if(function){
             dcmat.PlotChart(function);
@@ -1486,11 +1492,11 @@ yyreduce:
             std::cout << "\nNo Function defined!\n\n";
         }
     }
-#line 1490 "dcmat.tab.c"
+#line 1496 "dcmat.tab.c"
     break;
 
   case 20: /* Command: INTEGRATE L_PAREN Limit COLON Limit COMMA Expressao R_PAREN SEMICOLON  */
-#line 250 "dcmat.y"
+#line 256 "dcmat.y"
                                                                             {
         if(hasUndeclared){
             PrintUndeclareds();
@@ -1500,11 +1506,11 @@ yyreduce:
             dcmat.Integrate((yyvsp[-4].floatValue), (yyvsp[-6].floatValue), (yyvsp[-2].expValue));
         }
     }
-#line 1504 "dcmat.tab.c"
+#line 1510 "dcmat.tab.c"
     break;
 
   case 21: /* Command: SUM L_PAREN IDENTIFIER COMMA Limit COLON Limit COMMA Expressao R_PAREN SEMICOLON  */
-#line 259 "dcmat.y"
+#line 265 "dcmat.y"
                                                                                        {
          if(hasUndeclared){
             for(int i = 0; i < undeclared->vetor.size(); i++){
@@ -1516,21 +1522,21 @@ yyreduce:
 
         undeclared->vetor.size() > 0 ?PrintUndeclareds():dcmat.Sum((yyvsp[-6].floatValue), (yyvsp[-4].floatValue), (yyvsp[-2].expValue));
     }
-#line 1520 "dcmat.tab.c"
+#line 1526 "dcmat.tab.c"
     break;
 
   case 22: /* Command: RPN L_PAREN Expressao R_PAREN SEMICOLON  */
-#line 270 "dcmat.y"
+#line 276 "dcmat.y"
                                               {
         std::cout << "\nExpression in RPN format:\n\n";
         dcmat.ReversePolishNotation((yyvsp[-2].expValue));
         std::cout << "\n\n";
     }
-#line 1530 "dcmat.tab.c"
+#line 1536 "dcmat.tab.c"
     break;
 
   case 23: /* Matrix: L_SQUARE_BRACKET MatrixLine MatrixColum R_SQUARE_BRACKET  */
-#line 277 "dcmat.y"
+#line 283 "dcmat.y"
     {
         (yyvsp[-2].matrixValue)->matrix.push_back((yyvsp[-2].matrixValue)->line);
         if((yyvsp[-1].matrixValue) != nullptr){
@@ -1545,11 +1551,11 @@ yyreduce:
         }
         (yyval.matrixValue) = (yyvsp[-2].matrixValue);
     }
-#line 1549 "dcmat.tab.c"
+#line 1555 "dcmat.tab.c"
     break;
 
   case 24: /* MatrixColum: MatrixColum COMMA MatrixLine  */
-#line 292 "dcmat.y"
+#line 298 "dcmat.y"
                                           {
             MatrixClass *line = nullptr;
                 if((yyvsp[-2].matrixValue) != nullptr){
@@ -1561,17 +1567,17 @@ yyreduce:
                 }
             (yyval.matrixValue) = line;
         }
-#line 1565 "dcmat.tab.c"
-    break;
-
-  case 25: /* MatrixColum: %empty  */
-#line 303 "dcmat.y"
-          {(yyval.matrixValue) = nullptr;}
 #line 1571 "dcmat.tab.c"
     break;
 
+  case 25: /* MatrixColum: %empty  */
+#line 309 "dcmat.y"
+          {(yyval.matrixValue) = nullptr;}
+#line 1577 "dcmat.tab.c"
+    break;
+
   case 26: /* MatrixLine: L_SQUARE_BRACKET Limit MatrixValue R_SQUARE_BRACKET  */
-#line 305 "dcmat.y"
+#line 311 "dcmat.y"
                                                                 {
         MatrixClass *line = new MatrixClass();
         line->line.push_back((yyvsp[-2].floatValue));
@@ -1582,11 +1588,11 @@ yyreduce:
         }
         (yyval.matrixValue) = line;
     }
-#line 1586 "dcmat.tab.c"
+#line 1592 "dcmat.tab.c"
     break;
 
   case 27: /* MatrixValue: MatrixValue COMMA Limit  */
-#line 316 "dcmat.y"
+#line 322 "dcmat.y"
                                      { 
         MatrixClass *line = nullptr;
             if((yyvsp[-2].matrixValue) != nullptr){
@@ -1598,17 +1604,17 @@ yyreduce:
             }
             (yyval.matrixValue) = line;
         }
-#line 1602 "dcmat.tab.c"
-    break;
-
-  case 28: /* MatrixValue: %empty  */
-#line 327 "dcmat.y"
-          {(yyval.matrixValue) = nullptr;}
 #line 1608 "dcmat.tab.c"
     break;
 
+  case 28: /* MatrixValue: %empty  */
+#line 333 "dcmat.y"
+          {(yyval.matrixValue) = nullptr;}
+#line 1614 "dcmat.tab.c"
+    break;
+
   case 29: /* Set: FLOAT PRECISION Limit SEMICOLON  */
-#line 330 "dcmat.y"
+#line 336 "dcmat.y"
                                             {
         if((yyvsp[-1].floatValue) <= 8 && (yyvsp[-1].floatValue) >= 0){
             precision = (yyvsp[-1].floatValue);
@@ -1616,11 +1622,11 @@ yyreduce:
             printf("\nERROR: float precision must be from 0 to 8\n\n");
         }
         }
-#line 1620 "dcmat.tab.c"
+#line 1626 "dcmat.tab.c"
     break;
 
   case 30: /* Set: H_VIEW Limit COLON Limit SEMICOLON  */
-#line 337 "dcmat.y"
+#line 343 "dcmat.y"
                                          {
             if((yyvsp[-3].floatValue) < (yyvsp[-1].floatValue)){
                 h_view_lo = (yyvsp[-3].floatValue);
@@ -1629,11 +1635,11 @@ yyreduce:
                 printf("\nERROR: h_view_lo must be smaller than h_view_hi\n\n");
             }
         }
-#line 1633 "dcmat.tab.c"
+#line 1639 "dcmat.tab.c"
     break;
 
   case 31: /* Set: V_VIEW Limit COLON Limit SEMICOLON  */
-#line 345 "dcmat.y"
+#line 351 "dcmat.y"
                                          {
             if((yyvsp[-3].floatValue) < (yyvsp[-1].floatValue)){
                 v_view_lo = (yyvsp[-3].floatValue);
@@ -1642,27 +1648,27 @@ yyreduce:
                 printf("\nERROR: v_view_lo must be smaller than v_view_hi\n\n");
             }
         }
-#line 1646 "dcmat.tab.c"
+#line 1652 "dcmat.tab.c"
     break;
 
   case 32: /* Set: AXIS Bool SEMICOLON  */
-#line 353 "dcmat.y"
+#line 359 "dcmat.y"
                           {
             Axis = (yyvsp[-1].boolValue);
         }
-#line 1654 "dcmat.tab.c"
+#line 1660 "dcmat.tab.c"
     break;
 
   case 33: /* Set: ERASE PLOT Bool SEMICOLON  */
-#line 356 "dcmat.y"
+#line 362 "dcmat.y"
                                 {
             Erase_Plot = (yyvsp[-1].boolValue);
         }
-#line 1662 "dcmat.tab.c"
+#line 1668 "dcmat.tab.c"
     break;
 
   case 34: /* Set: INTEGRAL_STEPS Limit SEMICOLON  */
-#line 359 "dcmat.y"
+#line 365 "dcmat.y"
                                      {
         if((yyvsp[-1].floatValue) <= 0){
             std::cout << "\nERROR: integral_steps must be a positive non-zero integer\n\n";
@@ -1670,95 +1676,95 @@ yyreduce:
             integral_steps = (int)(yyvsp[-1].floatValue);
         }
     }
-#line 1674 "dcmat.tab.c"
-    break;
-
-  case 35: /* Expressao: ExpressionSumSub  */
-#line 368 "dcmat.y"
-                            {(yyval.expValue) = (yyvsp[0].expValue);}
 #line 1680 "dcmat.tab.c"
     break;
 
+  case 35: /* Expressao: ExpressionSumSub  */
+#line 374 "dcmat.y"
+                            {(yyval.expValue) = (yyvsp[0].expValue);}
+#line 1686 "dcmat.tab.c"
+    break;
+
   case 36: /* ExpressionSumSub: ExpressionSumSub ADD ExpressionMulDiv  */
-#line 370 "dcmat.y"
+#line 376 "dcmat.y"
                                                         {
                         (yyval.expValue) = ((yyvsp[-2].expValue) == nullptr || (yyvsp[0].expValue) == nullptr)? nullptr:expressao.CreateExp(ADD_KEY, (yyvsp[-2].expValue), (yyvsp[0].expValue));    
                 }
-#line 1688 "dcmat.tab.c"
+#line 1694 "dcmat.tab.c"
     break;
 
   case 37: /* ExpressionSumSub: ExpressionSumSub SUBTRACT ExpressionMulDiv  */
-#line 373 "dcmat.y"
+#line 379 "dcmat.y"
                                                              {
                         (yyval.expValue) = ((yyvsp[-2].expValue) == nullptr || (yyvsp[0].expValue) == nullptr)? nullptr:expressao.CreateExp(SUB_KEY, (yyvsp[-2].expValue), (yyvsp[0].expValue));    
                 }
-#line 1696 "dcmat.tab.c"
-    break;
-
-  case 38: /* ExpressionSumSub: ExpressionMulDiv  */
-#line 376 "dcmat.y"
-                                   {(yyval.expValue) = (yyvsp[0].expValue);}
 #line 1702 "dcmat.tab.c"
     break;
 
+  case 38: /* ExpressionSumSub: ExpressionMulDiv  */
+#line 382 "dcmat.y"
+                                   {(yyval.expValue) = (yyvsp[0].expValue);}
+#line 1708 "dcmat.tab.c"
+    break;
+
   case 39: /* ExpressionMulDiv: ExpressionMulDiv MULTIPLY ExpressionPowRem  */
-#line 378 "dcmat.y"
+#line 384 "dcmat.y"
                                                              {
                         (yyval.expValue) = ((yyvsp[-2].expValue) == nullptr || (yyvsp[0].expValue) == nullptr)? nullptr:expressao.CreateExp(MULTIPLY_KEY, (yyvsp[-2].expValue), (yyvsp[0].expValue));    
                 }
-#line 1710 "dcmat.tab.c"
+#line 1716 "dcmat.tab.c"
     break;
 
   case 40: /* ExpressionMulDiv: ExpressionMulDiv DIV ExpressionPowRem  */
-#line 381 "dcmat.y"
+#line 387 "dcmat.y"
                                                         {
                         (yyval.expValue) = ((yyvsp[-2].expValue) == nullptr || (yyvsp[0].expValue) == nullptr)? nullptr:expressao.CreateExp(DIV_KEY, (yyvsp[-2].expValue), (yyvsp[0].expValue));    
                 }
-#line 1718 "dcmat.tab.c"
-    break;
-
-  case 41: /* ExpressionMulDiv: ExpressionPowRem  */
-#line 384 "dcmat.y"
-                                   {(yyval.expValue) = (yyvsp[0].expValue);}
 #line 1724 "dcmat.tab.c"
     break;
 
+  case 41: /* ExpressionMulDiv: ExpressionPowRem  */
+#line 390 "dcmat.y"
+                                   {(yyval.expValue) = (yyvsp[0].expValue);}
+#line 1730 "dcmat.tab.c"
+    break;
+
   case 42: /* ExpressionPowRem: ExpressionPowRem POW Signal  */
-#line 386 "dcmat.y"
+#line 392 "dcmat.y"
                                               {
                         (yyval.expValue) = ((yyvsp[-2].expValue) == nullptr || (yyvsp[0].expValue) == nullptr)? nullptr:expressao.CreateExp(POW_KEY, (yyvsp[-2].expValue), (yyvsp[0].expValue));    
                 }
-#line 1732 "dcmat.tab.c"
+#line 1738 "dcmat.tab.c"
     break;
 
   case 43: /* ExpressionPowRem: ExpressionPowRem REST Signal  */
-#line 389 "dcmat.y"
+#line 395 "dcmat.y"
                                                {
                         (yyval.expValue) = ((yyvsp[-2].expValue) == nullptr || (yyvsp[0].expValue) == nullptr)? nullptr:expressao.CreateExp(REST, (yyvsp[-2].expValue), (yyvsp[0].expValue));    
                 }
-#line 1740 "dcmat.tab.c"
-    break;
-
-  case 44: /* ExpressionPowRem: Signal  */
-#line 392 "dcmat.y"
-                         {(yyval.expValue) = (yyvsp[0].expValue);}
 #line 1746 "dcmat.tab.c"
     break;
 
-  case 45: /* Signal: Termo  */
-#line 394 "dcmat.y"
-              {(yyval.expValue) = (yyvsp[0].expValue);}
+  case 44: /* ExpressionPowRem: Signal  */
+#line 398 "dcmat.y"
+                         {(yyval.expValue) = (yyvsp[0].expValue);}
 #line 1752 "dcmat.tab.c"
     break;
 
-  case 46: /* Signal: ADD Termo  */
-#line 395 "dcmat.y"
-                    {(yyval.expValue) = (yyvsp[0].expValue);}
+  case 45: /* Signal: Termo  */
+#line 400 "dcmat.y"
+              {(yyval.expValue) = (yyvsp[0].expValue);}
 #line 1758 "dcmat.tab.c"
     break;
 
+  case 46: /* Signal: ADD Termo  */
+#line 401 "dcmat.y"
+                    {(yyval.expValue) = (yyvsp[0].expValue);}
+#line 1764 "dcmat.tab.c"
+    break;
+
   case 47: /* Signal: SUBTRACT Termo  */
-#line 396 "dcmat.y"
+#line 402 "dcmat.y"
                          {
             if((yyvsp[0].expValue)->type == MATRIX_KEY){
                 Expressao *exp = expressao.CreateMatrix((yyvsp[0].expValue)->matrix);
@@ -1780,11 +1786,11 @@ yyreduce:
                 (yyval.expValue) = (yyvsp[0].expValue);
             }
         }
-#line 1784 "dcmat.tab.c"
+#line 1790 "dcmat.tab.c"
     break;
 
   case 48: /* Termo: IDENTIFIER  */
-#line 418 "dcmat.y"
+#line 424 "dcmat.y"
                   {
             result = dcmat.FindHashItem((yyvsp[0].stringValue));
             if(result.exists){
@@ -1796,17 +1802,17 @@ yyreduce:
                 hasUndeclared = true;
                 undeclared->vetor.push_back((yyvsp[0].stringValue));
             }}
-#line 1800 "dcmat.tab.c"
-    break;
-
-  case 49: /* Termo: Value  */
-#line 429 "dcmat.y"
-                {(yyval.expValue) = (yyvsp[0].expValue);}
 #line 1806 "dcmat.tab.c"
     break;
 
+  case 49: /* Termo: Value  */
+#line 435 "dcmat.y"
+                {(yyval.expValue) = (yyvsp[0].expValue);}
+#line 1812 "dcmat.tab.c"
+    break;
+
   case 50: /* Termo: SEN L_PAREN Expressao R_PAREN  */
-#line 430 "dcmat.y"
+#line 436 "dcmat.y"
                                         { 
                 if((yyvsp[-1].expValue)->type == MATRIX_KEY){
                     std::cout << "\nIncorrect type for operator ’SEN’ - have MATRIX\n\n";
@@ -1818,11 +1824,11 @@ yyreduce:
                     (yyval.expValue) = expressao.CreateSheet((yyvsp[-1].expValue)->type, SEN_KEY, value, (yyvsp[-1].expValue), element);
                 }
             }
-#line 1822 "dcmat.tab.c"
+#line 1828 "dcmat.tab.c"
     break;
 
   case 51: /* Termo: COS L_PAREN Expressao R_PAREN  */
-#line 441 "dcmat.y"
+#line 447 "dcmat.y"
                                          { 
                 if((yyvsp[-1].expValue)->type == MATRIX_KEY){
                     std::cout << "\nIncorrect type for operator ’COS’ - have MATRIX\n\n";
@@ -1834,11 +1840,11 @@ yyreduce:
                     (yyval.expValue) = expressao.CreateSheet((yyvsp[-1].expValue)->type, COS_KEY, value, (yyvsp[-1].expValue), element);
                 }
             }
-#line 1838 "dcmat.tab.c"
+#line 1844 "dcmat.tab.c"
     break;
 
   case 52: /* Termo: TAN L_PAREN Expressao R_PAREN  */
-#line 452 "dcmat.y"
+#line 458 "dcmat.y"
                                          { 
                 if((yyvsp[-1].expValue)->type == MATRIX_KEY){
                     std::cout << "\nIncorrect type for operator ’TAN’ - have MATRIX\n\n";
@@ -1850,11 +1856,11 @@ yyreduce:
                     (yyval.expValue) = expressao.CreateSheet((yyvsp[-1].expValue)->type, TAN_KEY, value, (yyvsp[-1].expValue), element);
                 }
             }
-#line 1854 "dcmat.tab.c"
+#line 1860 "dcmat.tab.c"
     break;
 
   case 53: /* Termo: ABS L_PAREN Expressao R_PAREN  */
-#line 463 "dcmat.y"
+#line 469 "dcmat.y"
                                         { 
                 if((yyvsp[-1].expValue)->type == MATRIX_KEY){
                     std::cout << "\nIncorrect type for operator ’ABS’ - have MATRIX\n\n";
@@ -1866,111 +1872,111 @@ yyreduce:
                     (yyval.expValue) = expressao.CreateSheet((yyvsp[-1].expValue)->type, ABS_KEY, value, (yyvsp[-1].expValue), element);
                 }
             }
-#line 1870 "dcmat.tab.c"
-    break;
-
-  case 54: /* Limit: NumFloat  */
-#line 475 "dcmat.y"
-                {(yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1876 "dcmat.tab.c"
     break;
 
-  case 55: /* Limit: ADD NumFloat  */
-#line 476 "dcmat.y"
-                       {(yyval.floatValue) = (yyvsp[0].floatValue);}
+  case 54: /* Limit: NumFloat  */
+#line 481 "dcmat.y"
+                {(yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1882 "dcmat.tab.c"
     break;
 
-  case 56: /* Limit: SUBTRACT NumFloat  */
-#line 477 "dcmat.y"
-                            { (yyval.floatValue) = -(yyvsp[0].floatValue); }
+  case 55: /* Limit: ADD NumFloat  */
+#line 482 "dcmat.y"
+                       {(yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1888 "dcmat.tab.c"
     break;
 
-  case 57: /* Limit: NumInt  */
-#line 478 "dcmat.y"
-                 {(yyval.floatValue) = (yyvsp[0].integerValue);}
+  case 56: /* Limit: SUBTRACT NumFloat  */
+#line 483 "dcmat.y"
+                            { (yyval.floatValue) = -(yyvsp[0].floatValue); }
 #line 1894 "dcmat.tab.c"
     break;
 
-  case 58: /* Limit: ADD NumInt  */
-#line 479 "dcmat.y"
-                     {(yyval.floatValue) = (yyvsp[0].integerValue);}
+  case 57: /* Limit: NumInt  */
+#line 484 "dcmat.y"
+                 {(yyval.floatValue) = (yyvsp[0].integerValue);}
 #line 1900 "dcmat.tab.c"
     break;
 
-  case 59: /* Limit: SUBTRACT NumInt  */
-#line 480 "dcmat.y"
-                          {(yyval.floatValue) = -(yyvsp[0].integerValue);}
+  case 58: /* Limit: ADD NumInt  */
+#line 485 "dcmat.y"
+                     {(yyval.floatValue) = (yyvsp[0].integerValue);}
 #line 1906 "dcmat.tab.c"
     break;
 
-  case 60: /* Value: NumInt  */
-#line 482 "dcmat.y"
-              { (yyval.expValue) = expressao.CreateSheet(INT_KEY, OP, (yyvsp[0].integerValue), nullptr); }
+  case 59: /* Limit: SUBTRACT NumInt  */
+#line 486 "dcmat.y"
+                          {(yyval.floatValue) = -(yyvsp[0].integerValue);}
 #line 1912 "dcmat.tab.c"
     break;
 
-  case 61: /* Value: NumFloat  */
-#line 483 "dcmat.y"
-               { (yyval.expValue) = expressao.CreateSheet(FLOAT_KEY, OP, (yyvsp[0].floatValue), nullptr); }
+  case 60: /* Value: NumInt  */
+#line 488 "dcmat.y"
+              { (yyval.expValue) = expressao.CreateSheet(INT_KEY, OP, (yyvsp[0].integerValue), nullptr); }
 #line 1918 "dcmat.tab.c"
     break;
 
+  case 61: /* Value: NumFloat  */
+#line 489 "dcmat.y"
+               { (yyval.expValue) = expressao.CreateSheet(FLOAT_KEY, OP, (yyvsp[0].floatValue), nullptr); }
+#line 1924 "dcmat.tab.c"
+    break;
+
   case 62: /* Value: L_PAREN Expressao R_PAREN  */
-#line 484 "dcmat.y"
+#line 490 "dcmat.y"
                                 { 
         int element = (yyvsp[-1].expValue)->element;
         (yyval.expValue) = expressao.CreateSheet((yyvsp[-1].expValue)->type, EXP_KEY, (yyvsp[-1].expValue)->value, (yyvsp[-1].expValue), element) ;}
-#line 1926 "dcmat.tab.c"
-    break;
-
-  case 63: /* Value: VAR  */
-#line 487 "dcmat.y"
-          {(yyval.expValue) = expressao.CreateSheet(VAR_KEY, OP, 0, nullptr); }
 #line 1932 "dcmat.tab.c"
     break;
 
-  case 64: /* Value: PI  */
-#line 488 "dcmat.y"
-         { (yyval.expValue) = expressao.CreateSheet(FLOAT_KEY, OP, pi, nullptr); }
+  case 63: /* Value: VAR  */
+#line 493 "dcmat.y"
+          {(yyval.expValue) = expressao.CreateSheet(VAR_KEY, OP, 0, nullptr); }
 #line 1938 "dcmat.tab.c"
     break;
 
-  case 65: /* Value: E  */
-#line 489 "dcmat.y"
-         { (yyval.expValue) = expressao.CreateSheet(FLOAT_KEY, OP, euler, nullptr); }
+  case 64: /* Value: PI  */
+#line 494 "dcmat.y"
+         { (yyval.expValue) = expressao.CreateSheet(FLOAT_KEY, OP, pi, nullptr); }
 #line 1944 "dcmat.tab.c"
     break;
 
+  case 65: /* Value: E  */
+#line 495 "dcmat.y"
+         { (yyval.expValue) = expressao.CreateSheet(FLOAT_KEY, OP, euler, nullptr); }
+#line 1950 "dcmat.tab.c"
+    break;
+
   case 66: /* NumInt: INT  */
-#line 493 "dcmat.y"
+#line 499 "dcmat.y"
               {
             (yyval.integerValue) = (yyvsp[0].integerValue);
         }
-#line 1952 "dcmat.tab.c"
-    break;
-
-  case 67: /* NumFloat: REAL  */
-#line 497 "dcmat.y"
-               { (yyval.floatValue) = (yyvsp[0].floatValue); }
 #line 1958 "dcmat.tab.c"
     break;
 
-  case 68: /* Bool: ON  */
-#line 499 "dcmat.y"
-         { (yyval.boolValue) = true; }
+  case 67: /* NumFloat: REAL  */
+#line 503 "dcmat.y"
+               { (yyval.floatValue) = (yyvsp[0].floatValue); }
 #line 1964 "dcmat.tab.c"
     break;
 
-  case 69: /* Bool: OFF  */
-#line 500 "dcmat.y"
-          { (yyval.boolValue) = false; }
+  case 68: /* Bool: ON  */
+#line 505 "dcmat.y"
+         { (yyval.boolValue) = true; }
 #line 1970 "dcmat.tab.c"
     break;
 
+  case 69: /* Bool: OFF  */
+#line 506 "dcmat.y"
+          { (yyval.boolValue) = false; }
+#line 1976 "dcmat.tab.c"
+    break;
 
-#line 1974 "dcmat.tab.c"
+
+#line 1980 "dcmat.tab.c"
 
       default: break;
     }
@@ -2163,28 +2169,28 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 502 "dcmat.y"
+#line 508 "dcmat.y"
 
 
 void expectedDelaration(){
-     std::cout << "SYNTAX ERROR: Incomplete Command\n";
-    return;
+    std::cout << "\nSYNTAX ERROR: Incomplete Command.\n\n";
+    stopPrint = true;
 }
 
 void syntaxError(){
-    std::cout << "SYNTAX ERROR: " << yytext << "\n";
+    std::cout << "\nSYNTAX ERROR: [" << yytext << "]\n\n";   
+    stopPrint = true;
 }
 
 void yyerror(const void *s) {
-
-    if(!isLexico){
-        (yychar == 0)?expectedDelaration():syntaxError(); 
+    if(!stopPrint){
+        if(!isLexico){
+            (yychar == EOL)?expectedDelaration():syntaxError(); 
+        }
+        else{
+            isLexico = false;
+        }
     }
-    else{
-        isLexico = false;
-    }
-
-    return;
 }
 
 void PrintUndeclareds(){
@@ -2198,7 +2204,7 @@ void PrintUndeclareds(){
 
 int main(int argc, char **argv) {
     while(1){
-        printf("> ");
+        if(!stopPrint)printf("> ");
         yyparse();
     }
     return 0;
