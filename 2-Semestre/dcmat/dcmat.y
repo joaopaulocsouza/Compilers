@@ -102,6 +102,7 @@
 %token <floatValue>REAL;
 %token <stringValue>IDENTIFIER;
 %token EOL;
+%token IGNORE;
 
 %type <integerValue>NumInt;
 %type <floatValue>NumFloat;
@@ -123,9 +124,10 @@
 
 %%
 
-Dcmat: EOL {stopPrint = false; return 0;}
+Dcmat:
+    | EOL {stopPrint = false; isLexico = false; return 0;}
     | QUIT EOL {exit(0);}
-    | Command EOL {stopPrint = false; hasUndeclared = false; undeclared->vetor.clear() ;return 0;}
+    | Command EOL {stopPrint = false; hasUndeclared = false; isLexico = false; undeclared->vetor.clear() ;return 0;}
 
 Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | SHOW SETTINGS SEMICOLON {dcmat.ShowSettings();}

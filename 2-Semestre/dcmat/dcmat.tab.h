@@ -112,7 +112,8 @@ extern int yydebug;
     INT = 305,                     /* INT  */
     REAL = 306,                    /* REAL  */
     IDENTIFIER = 307,              /* IDENTIFIER  */
-    EOL = 308                      /* EOL  */
+    EOL = 308,                     /* EOL  */
+    IGNORE = 309                   /* IGNORE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -130,7 +131,7 @@ union YYSTYPE
     Expressao *expValue;
     MatrixClass *matrixValue;
 
-#line 134 "dcmat.tab.h"
+#line 135 "dcmat.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

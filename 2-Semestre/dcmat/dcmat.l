@@ -7,6 +7,7 @@
     #include "includes.hpp"
 
     extern bool isLexico;
+    extern bool stopPrint;
 %}
 
 %%
@@ -68,6 +69,10 @@
 [ ] {};
 "\t" {};
 
-. {std::cout << "\nInvalid Symbol: " << yytext << "\n\n"; isLexico = true;}
+. {if(!stopPrint){
+    std::cout << "\nInvalid Symbol: " << yytext << "\n\n"; 
+    isLexico = true;
+    stopPrint = true;
+  }; return IGNORE;}
 
 %%

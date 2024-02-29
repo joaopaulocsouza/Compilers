@@ -310,6 +310,8 @@ void DCMAT::SolveLinearSystem(MatrixClass *matrix){
     }
 
     
+
+    
     std::vector<float> result(matrix->lines);
     for (int i = matrix->lines - 1; i >= 0; --i) {
         float sum = 0;

@@ -620,8 +620,9 @@ char *yytext;
     #include "includes.hpp"
 
     extern bool isLexico;
-#line 624 "lex.yy.c"
+    extern bool stopPrint;
 #line 625 "lex.yy.c"
+#line 626 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -838,10 +839,10 @@ YY_DECL
 		}
 
 	{
-#line 12 "dcmat.l"
+#line 13 "dcmat.l"
 
 
-#line 845 "lex.yy.c"
+#line 846 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -900,286 +901,290 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 14 "dcmat.l"
+#line 15 "dcmat.l"
 return ADD;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 15 "dcmat.l"
+#line 16 "dcmat.l"
 return SUBTRACT;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 16 "dcmat.l"
+#line 17 "dcmat.l"
 return MULTIPLY;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 17 "dcmat.l"
+#line 18 "dcmat.l"
 return DIV;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 18 "dcmat.l"
+#line 19 "dcmat.l"
 return POW;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 19 "dcmat.l"
+#line 20 "dcmat.l"
 return REST;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 20 "dcmat.l"
+#line 21 "dcmat.l"
 return L_PAREN;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 21 "dcmat.l"
+#line 22 "dcmat.l"
 return R_PAREN;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 22 "dcmat.l"
+#line 23 "dcmat.l"
 return EQUAL;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 23 "dcmat.l"
+#line 24 "dcmat.l"
 return ASSIGN;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 24 "dcmat.l"
+#line 25 "dcmat.l"
 return COLON;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 25 "dcmat.l"
+#line 26 "dcmat.l"
 return L_SQUARE_BRACKET;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 26 "dcmat.l"
+#line 27 "dcmat.l"
 return R_SQUARE_BRACKET;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 27 "dcmat.l"
+#line 28 "dcmat.l"
 return SEMICOLON;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 28 "dcmat.l"
+#line 29 "dcmat.l"
 return COMMA;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 30 "dcmat.l"
+#line 31 "dcmat.l"
 return ABOUT;
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 31 "dcmat.l"
+#line 32 "dcmat.l"
 return ABS;
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 32 "dcmat.l"
+#line 33 "dcmat.l"
 return AXIS;
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 33 "dcmat.l"
+#line 34 "dcmat.l"
 return CONNECT_DOTS;
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 34 "dcmat.l"
+#line 35 "dcmat.l"
 return COS;
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 35 "dcmat.l"
+#line 36 "dcmat.l"
 return DETERMINANT;
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 36 "dcmat.l"
+#line 37 "dcmat.l"
 return ERASE;
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 37 "dcmat.l"
+#line 38 "dcmat.l"
 return FLOAT;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 38 "dcmat.l"
+#line 39 "dcmat.l"
 return H_VIEW;
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 39 "dcmat.l"
+#line 40 "dcmat.l"
 return INTEGRAL_STEPS;
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 40 "dcmat.l"
+#line 41 "dcmat.l"
 return INTEGRATE;
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 41 "dcmat.l"
+#line 42 "dcmat.l"
 return LINEAR_SYSTEM;
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 42 "dcmat.l"
+#line 43 "dcmat.l"
 return MATRIX;
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 43 "dcmat.l"
+#line 44 "dcmat.l"
 return OFF;
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 44 "dcmat.l"
+#line 45 "dcmat.l"
 return ON;
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 45 "dcmat.l"
+#line 46 "dcmat.l"
 return PI;
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 46 "dcmat.l"
+#line 47 "dcmat.l"
 return E; 
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 47 "dcmat.l"
+#line 48 "dcmat.l"
 return VAR;
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 48 "dcmat.l"
+#line 49 "dcmat.l"
 return PLOT;
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 49 "dcmat.l"
+#line 50 "dcmat.l"
 return PRECISION;
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 50 "dcmat.l"
+#line 51 "dcmat.l"
 return QUIT;
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 51 "dcmat.l"
+#line 52 "dcmat.l"
 return RESET;
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 52 "dcmat.l"
+#line 53 "dcmat.l"
 return RPN;
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 53 "dcmat.l"
+#line 54 "dcmat.l"
 return SEN;
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 54 "dcmat.l"
+#line 55 "dcmat.l"
 return SETTINGS;
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 55 "dcmat.l"
+#line 56 "dcmat.l"
 return SET;
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 56 "dcmat.l"
+#line 57 "dcmat.l"
 return SHOW;
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 57 "dcmat.l"
+#line 58 "dcmat.l"
 return SOLVE;
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 58 "dcmat.l"
+#line 59 "dcmat.l"
 return SUM;
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 59 "dcmat.l"
+#line 60 "dcmat.l"
 return SYMBOLS;
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 60 "dcmat.l"
+#line 61 "dcmat.l"
 return TAN;
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 61 "dcmat.l"
+#line 62 "dcmat.l"
 return V_VIEW;
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 63 "dcmat.l"
+#line 64 "dcmat.l"
 {yylval.floatValue = atof(yytext); return REAL;}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 64 "dcmat.l"
+#line 65 "dcmat.l"
 {yylval.integerValue = atoi(yytext);  return INT;}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 65 "dcmat.l"
+#line 66 "dcmat.l"
 {yylval.stringValue = strdup(yytext); return IDENTIFIER;}
 	YY_BREAK
 case 51:
 /* rule 51 can match eol */
 YY_RULE_SETUP
-#line 66 "dcmat.l"
+#line 67 "dcmat.l"
 return EOL;
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 67 "dcmat.l"
+#line 68 "dcmat.l"
 return EOL;
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 68 "dcmat.l"
+#line 69 "dcmat.l"
 {};
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 69 "dcmat.l"
+#line 70 "dcmat.l"
 {};
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 71 "dcmat.l"
-{std::cout << "\nInvalid Symbol: " << yytext << "\n\n"; isLexico = true;}
+#line 72 "dcmat.l"
+{if(!stopPrint){
+    std::cout << "\nInvalid Symbol: " << yytext << "\n\n"; 
+    isLexico = true;
+    stopPrint = true;
+  }; return IGNORE;}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 73 "dcmat.l"
+#line 78 "dcmat.l"
 ECHO;
 	YY_BREAK
-#line 1183 "lex.yy.c"
+#line 1188 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2184,6 +2189,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 73 "dcmat.l"
+#line 78 "dcmat.l"
 
 
