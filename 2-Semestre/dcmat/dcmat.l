@@ -73,6 +73,6 @@
     std::cout << "\nInvalid Symbol: " << yytext << "\n\n"; 
     isLexico = true;
     stopPrint = true;
-  }; return IGNORE;}
+  };}
 
 %%

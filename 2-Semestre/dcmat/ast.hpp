@@ -134,6 +134,7 @@ class Expressao {
             new_exp->left = termo; 
             new_exp->right = exp;
             if(termo->type == MATRIX_KEY || exp->type == MATRIX_KEY){
+                if(termo->type == ID_KEY || exp->type == ID_KEY) return nullptr;
                 switch (oper) {
                     case ADD_KEY:
                         if(termo->type == MATRIX_KEY && (exp->type == INT_KEY || exp->type == FLOAT_KEY)){
@@ -213,9 +214,6 @@ class Expressao {
                                 std::cout << "\nIncorrect dimensions for operator ’*’ - have MATRIX ["<< termo->matrix->lines <<"][" << termo->matrix->columns <<"] and MATRIX ["<< exp->matrix->lines <<"][" << exp->matrix->columns << "]\n\n";
                                 return nullptr;
                             }else{
-
-                                std::cout << "\n\n" << exp->matrix->columns << "\n\n";
-
                                 for(int i = 0; i < termo->matrix->lines; i++){
                                     MatrixClass *line = new MatrixClass();
                                     std::vector<float> result(exp->matrix->columns, 0);  
@@ -293,6 +291,7 @@ class Expressao {
             new_exp->type = MATRIX_KEY;
             new_exp->left = nullptr;
             new_exp->right = nullptr;
+            new_exp->exp = nullptr;
             new_exp->matrix = matrix;
             new_exp->element = EXPRESSION_KEY; 
 

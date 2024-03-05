@@ -93,12 +93,10 @@ void DCMAT::ShowSymbols(){
             for(int j = 0; j < hash[i].size() ; j++){
                 std::cout << hash[i][j].name << " - ";
                 switch (hash[i][j].value->type){
-                    case INT_KEY:
-                        std::cout << "INT"<< std::endl; break;
-                    case FLOAT_KEY:
+                    case FLOAT_KEY: case INT_KEY:
                         std::cout << "FLOAT" << std::endl; break;
                     case MATRIX_KEY:
-                        std::cout << "MATRIZ [" << hash[i][j].value->matrix->lines <<  "][" << hash[i][j].value->matrix->columns << "]" << std::endl; break;
+                        std::cout << "MATRIX [" << hash[i][j].value->matrix->lines <<  "][" << hash[i][j].value->matrix->columns << "]" << std::endl; break;
                 }
             }
         }

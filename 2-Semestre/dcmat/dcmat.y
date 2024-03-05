@@ -33,6 +33,7 @@
     extern int yyleng;
     void yyerror(const void *s);
     void PrintUndeclareds();
+    void clearMemory();
     bool stopPrint = false;
 %}
 
@@ -69,7 +70,6 @@
 %token ABOUT;
 %token ABS;
 %token AXIS;
-%token CONNECT_DOTS;
 %token COS;
 %token DETERMINANT;
 %token ERASE;
@@ -125,8 +125,8 @@
 %%
 
 Dcmat:
-    | EOL {stopPrint = false; isLexico = false; return 0;}
-    | QUIT EOL {exit(0);}
+    | EOL {stopPrint = false; undeclared->vetor.clear(); isLexico = false; return 0;}
+    | QUIT EOL { clearMemory(); exit(0);}
     | Command EOL {stopPrint = false; hasUndeclared = false; isLexico = false; undeclared->vetor.clear() ;return 0;}
 
 Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
@@ -165,7 +165,7 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | IDENTIFIER ASSIGN Expressao SEMICOLON {
         if(hasUndeclared){
             PrintUndeclareds();
-        }else if($3 != nullptr){
+        }else if($3 != nullptr && $3->element != FUNCTION_KEY){
             Expressao *exp = $3;
             dcmat.CreateHashItem($1, exp, exp->type);
             if(exp->type == FLOAT_KEY || exp->type == INT_KEY) {
@@ -224,28 +224,31 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | Expressao { 
         if($1 != nullptr){
             Expressao *exp = $1; 
-            if(hasUndeclared){
-                PrintUndeclareds();
-            }else if(exp->element != FUNCTION_KEY){
-                if(exp->type == MATRIX_KEY){
-                    dcmat.ShowMatrix(exp->matrix);
-                }else{
-
-                std::cout << "\n" << std::fixed << std::setprecision(precision) << exp->value << "\n\n"; 
+            if(!stopPrint){
+                if(hasUndeclared){
+                    PrintUndeclareds();
+                }else if(exp->element != FUNCTION_KEY){
+                    if(exp->type == MATRIX_KEY){
+                        dcmat.ShowMatrix(exp->matrix);
+                    }else{
+                        std::cout << "\n" << std::fixed << std::setprecision(precision) << exp->value << "\n\n"; 
+                    }
                 }
-            }
-            else{ 
-                std::cout << "\nThe x variable cannot be present on expressions.\n" << std::endl;}
+                else{ 
+                    std::cout << "\nThe x variable cannot be present on expressions.\n" << std::endl;}
+                }
             }
         }
     | PLOT L_PAREN Expressao R_PAREN SEMICOLON {
-        if(hasUndeclared){
-            PrintUndeclareds();
-        }else if($3->element == FUNCTION_KEY){
-            function = $3;
-            dcmat.PlotChart(function);
-        }else{
-            std::cout << "\nNo Function defined!\n\n";
+        if(!stopPrint){
+            if(hasUndeclared){
+                PrintUndeclareds();
+            }else if($3->element == FUNCTION_KEY){
+                function = $3;
+                dcmat.PlotChart(function);
+            }else{
+                std::cout << "\nNo Function defined!\n\n";
+            }
         }
     };
     | PLOT SEMICOLON {
@@ -432,7 +435,14 @@ Termo: IDENTIFIER {
                 Expressao *exp = expressao.CreateSheet(ID_KEY, OP, 0, nullptr, EXPRESSION_KEY, $1);
                 $$ = exp;
                 hasUndeclared = true;
-                undeclared->vetor.push_back($1);
+                bool test = false;
+                for(int i = 0; i < undeclared->vetor.size(); i++){ 
+                    if(undeclared->vetor[i] == $1){
+                        test = true;
+                        break;
+                    }
+                }
+                if(!test)undeclared->vetor.push_back($1);
             }};
         | Value {$$ = $1;};
         | SEN L_PAREN Expressao R_PAREN { 
@@ -511,7 +521,6 @@ Bool: ON { $$ = true; };
 
 void expectedDelaration(){
     std::cout << "\nSYNTAX ERROR: Incomplete Command.\n\n";
-    stopPrint = true;
 }
 
 void syntaxError(){
@@ -528,6 +537,7 @@ void yyerror(const void *s) {
             isLexico = false;
         }
     }
+    undeclared->vetor.clear(); hasUndeclared = false;
 }
 
 void PrintUndeclareds(){
@@ -538,6 +548,11 @@ void PrintUndeclareds(){
     std::cout << "\n";
     undeclared->vetor.clear(); hasUndeclared = false;
 };
+
+void clearMemory(){
+    if(matrix != nullptr) delete matrix;
+    delete undeclared;
+}
 
 int main(int argc, char **argv) {
     while(1){

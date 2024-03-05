@@ -20,7 +20,7 @@ AST_HEADER_FILE = ast.hpp
 all: $(OUTPUT_FILE)
 
 $(OUTPUT_FILE): lex.yy.c dcmat.tab.c $(CPP_FILE) $(AST_HEADER_FILE)
-	g++ -o $(OUTPUT_FILE) lex.yy.c dcmat.tab.c $(CPP_FILE) -I. -lfl -lstdc++
+	g++ -o $(OUTPUT_FILE) lex.yy.c dcmat.tab.c $(CPP_FILE) -I. -lstdc++
 
 lex.yy.c: $(LEX_FILE)
 	flex $(LEX_FILE)
