@@ -1,0 +1,18 @@
+%option noyywrap
+%{
+    #include "regalloc.tab.h"
+    #include <stdio.h>
+    #include <stdbool.h>
+    #include <stdlib.h>    
+%}
+
+%%
+[0-9]+ { return INT;}
+"Grafo" { return GRAFO;}
+"=" {return EQUAL;}
+"K" {return K;}
+":" {return COLON;}
+"-->" {return ARROW;}
+[\n] {return EOL;}
+"\0" {}
+%%
