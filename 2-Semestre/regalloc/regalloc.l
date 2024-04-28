@@ -8,7 +8,7 @@
 
 %%
 [0-9]+ { return INT;}
-"Grafo" { return GRAFO;}
+"Grafo" { return GRAPH;}
 "=" {return EQUAL;}
 "K" {return K;}
 ":" {return COLON;}

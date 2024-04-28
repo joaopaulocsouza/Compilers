@@ -13,7 +13,7 @@ OUTPUT_FILE = regalloc
 # CPP_FILE = ast.cpp
 
 # # Nome do arquivo de header C++
-# HEADER_FILE = ast.hpp
+HEADER_FILE = regalloc.hpp
 
 # AST-CPP_FILE = ast.cpp
 
@@ -21,7 +21,7 @@ OUTPUT_FILE = regalloc
 
 all: $(OUTPUT_FILE)
 
-$(OUTPUT_FILE): lex.yy.c regalloc.tab.c 
+$(OUTPUT_FILE): lex.yy.c regalloc.tab.c $(HEADER_FILE)
 	g++ -o $(OUTPUT_FILE) lex.yy.c regalloc.tab.c -I.
 
 lex.yy.c: $(LEX_FILE)
