@@ -7,7 +7,7 @@
 %}
 
 %%
-[0-9]+ { return INT;}
+[0-9]+ {yylval.integer = atoi(yytext); return INT;}
 "Grafo" { return GRAPH;}
 "=" {return EQUAL;}
 "K" {return K;}
@@ -15,4 +15,6 @@
 "-->" {return ARROW;}
 [\n] {return EOL;}
 "\0" {}
+[ ] {};
+"\t" {};
 %%

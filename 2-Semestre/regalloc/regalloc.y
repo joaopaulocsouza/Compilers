@@ -4,7 +4,10 @@
     #include <string.h>
     #include <stdbool.h>
     #include <vector>
+    #include <stack>
     #include "regalloc.hpp"
+
+    int i, j;
 
     extern int yylex();
     extern char* yytext;
@@ -13,14 +16,15 @@
     bool spill = false;
     Graph* graph = new Graph();
     std::vector<int> interference;
+    std::stack<Vertex *> s;
 %}
 
 %union {
-    int i;
+    int integer;
     char* s;
 }
 
-%token <i> INT;
+%token <integer> INT;
 %token K;
 %token <s>GRAPH;
 %token EQUAL;
@@ -28,7 +32,7 @@
 %token COLON;
 %token EOL;
 
-%type <i> Value;
+%type <integer> Value;
 
 %start Regalloc
 
@@ -41,16 +45,13 @@
                 | Value ARROW Registers {
                         Vertex* v;
                         if(!graph->findVertex($1)){
-                            std::cout << "Creating vertex " << $1 << std::endl;
-                            v = new Vertex($1);
+                            v = new Vertex($1, graph->colors);
                         }else{
-                            std::cout << "Vertex " << $1 << " already exists" << std::endl;
                             v = graph->getVertex($1);
                         }
-                        for(int i = 0; i < interference.size(); i++){
+                        for(i = 0; i < interference.size(); i++){
                             if(!graph->findVertex(interference[i])){
-                                Vertex* z = new Vertex(interference[i]);
-                                std::cout << "Creating vertex interference: " << interference[i] << std::endl;
+                                Vertex* z = new Vertex(interference[i], graph->colors);
                                 graph->addVertex(z);
                             }
                             v->addEdge(interference[i], graph->getVertex(interference[i]));
@@ -64,7 +65,9 @@
                 interference.push_back($1);
                }
 
-    Value: INT {$$ = atoi(yytext);}
+    Value: INT {
+        $$ = $1;
+        }
 %%
 
 void yyerror(char *s) {
@@ -79,22 +82,78 @@ void spillError(){
 int main(int argc, char **argv){
     yyparse();
 
-    std::cout << std::endl;
     std::cout << "Graph " << graph->G << " -> Physical Registers: " << graph->colors << std::endl;
     std::cout << "----------------------------------------" << std::endl;
 
-    for(int i = 0 ; i < graph->vertices.size(); i++){
-        std::cout << graph->vertices[i]->vertex << " --> ";
-        for(int j = 0; j < graph->vertices[i]->edges.size(); j++){
-            std::cout << graph->vertices[i]->edges[j] << " ";
+
+    for( i = graph->colors; i > 1; i--){
+        std::cout << "----------------------------------------" << std::endl;
+        std::cout << "K=" << i << "\n" << std::endl;
+
+        //Simplify
+        while(graph->hasVirtualReg()){
+            Vertex* v = graph->getVertexWithMinEdges();
+            if(graph->countVirtualEdge(v->vertex) < i){
+                std::cout << "Push: " << v->vertex << std::endl;
+                s.push(v);
+                graph->removeVertex(v->vertex);
+            }else{
+                v = graph->getVertexWithMaxEdges();
+                std::cout << "Push: " << v->vertex << "*" << std::endl;
+                s.push(v);
+                graph->removeVertex(v->vertex);
+            }
         }
-        std::cout << std::endl;
+
+        //Select
+        bool stop = false;
+        while(s.size() > 0){
+            Vertex *v = s.top();
+            graph->addVertex(v);
+            s.pop();
+            graph->getColor(v->vertex, i-1);
+            v->removed = false;
+            std::cout << "Pop: " << v->vertex << " -> ";
+            if(v->color == -1){
+                std::cout << "NO COLOR AVAILABLE" << std::endl;
+                break;
+            }else{
+                std::cout << v->color << std::endl;
+            }
+        }
+
+        if(s.size() > 0){
+            while(s.size() > 0){
+                graph->addVertex(s.top());
+                s.pop();
+            }
+            graph->result.push_back({spill: true, k: i});
+        }else{
+            graph->result.push_back({spill: false, k: i});
+        }
+
+        graph->resetVertexes();
     }
 
-    /* for(int i = graph->colors; i > 1; i--){
-        std::cout << "Graph " << graph->G << " -> K = " << i << ": " << graph->result.top() << std::endl;
-        graph->result.pop();
-    } */
+    std::cout << "----------------------------------------" << std::endl;
+    std::cout << "----------------------------------------" << std::endl;
+    for(auto element:graph->result){
+        std::cout << "Graph " << graph->G;
+        if(element.k > 9){
+            std::cout << " -> K = ";
+        }else{
+            std::cout << " -> K =  ";
+        }
+        std::cout << element.k << ": ";
+        if(element.spill){
+            std::cout << "SPILL" << std::endl;
+        }else{
+            std::cout << "Successful Allocation" << std::endl;
+        }
+    }
+
+    graph->destroyGraph();
+    delete graph;
 
 
     return 0;
