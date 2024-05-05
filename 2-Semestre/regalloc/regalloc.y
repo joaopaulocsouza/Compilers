@@ -88,25 +88,25 @@ int main(int argc, char **argv){
 
     for( i = graph->colors; i > 1; i--){
         std::cout << "----------------------------------------" << std::endl;
-        std::cout << "K=" << i << "\n" << std::endl;
+        std::cout << "K = " << i << "\n" << std::endl;
 
         //Simplify
         while(graph->hasVirtualReg()){
             Vertex* v = graph->getVertexWithMinEdges();
-            if(graph->countVirtualEdge(v->vertex) < i){
+            if(graph->countEdge(v->vertex) < i){
                 std::cout << "Push: " << v->vertex << std::endl;
                 s.push(v);
                 graph->removeVertex(v->vertex);
             }else{
                 v = graph->getVertexWithMaxEdges();
-                std::cout << "Push: " << v->vertex << "*" << std::endl;
+                std::cout << "Push: " << v->vertex << " *" << std::endl;
                 s.push(v);
                 graph->removeVertex(v->vertex);
             }
         }
 
         //Select
-        bool stop = false;
+        bool spill = false;
         while(s.size() > 0){
             Vertex *v = s.top();
             graph->addVertex(v);
@@ -116,13 +116,14 @@ int main(int argc, char **argv){
             std::cout << "Pop: " << v->vertex << " -> ";
             if(v->color == -1){
                 std::cout << "NO COLOR AVAILABLE" << std::endl;
+                spill = true;
                 break;
             }else{
                 std::cout << v->color << std::endl;
             }
         }
 
-        if(s.size() > 0){
+        if(spill){
             while(s.size() > 0){
                 graph->addVertex(s.top());
                 s.pop();
@@ -136,9 +137,9 @@ int main(int argc, char **argv){
     }
 
     std::cout << "----------------------------------------" << std::endl;
-    std::cout << "----------------------------------------" << std::endl;
+    std::cout << "----------------------------------------";
     for(auto element:graph->result){
-        std::cout << "Graph " << graph->G;
+        std::cout << "\nGraph " << graph->G;
         if(element.k > 9){
             std::cout << " -> K = ";
         }else{
@@ -146,9 +147,9 @@ int main(int argc, char **argv){
         }
         std::cout << element.k << ": ";
         if(element.spill){
-            std::cout << "SPILL" << std::endl;
+            std::cout << "SPILL";
         }else{
-            std::cout << "Successful Allocation" << std::endl;
+            std::cout << "Successful Allocation";
         }
     }
 
