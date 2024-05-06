@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <map>
 
 
 class Graph;
@@ -18,12 +19,14 @@ class Vertex {
         bool virtualReg;
         bool spill;
         bool removed;
+        int countEdge;
 
         Vertex(int vertex, int colors) {
             this->vertex = vertex;
             this->color = -1;
             this->virtualReg = vertex>=colors;
             this->spill = false;
+            this->countEdge = 0;
             this->removed = false;
         }
 
@@ -62,12 +65,16 @@ class Graph {
     public:
         int G;
         int colors;
-        std::vector<Vertex*> vertices;
+        int virtualRegs;
+        std::map<int, Vertex*> vertices;
         std::vector<ResultType> result;
+        Vertex *max, *min;
 
         Graph() {
             this->G = 0;
             this->colors = 0;
+            this->max = nullptr;
+            this->min = nullptr;
         }
 
         Graph(int V) {
@@ -75,62 +82,50 @@ class Graph {
         }
 
         void addVertex(Vertex* vertex) {
-            if(!findVertex(vertex->getVertex())) {
-                vertices.push_back(vertex);
+            if(!vertices[vertex->vertex]) {
+                vertices[vertex->vertex] = vertex;
+                if(vertex->virtualReg) {
+                    virtualRegs++;
+                }
             }
         }
 
         bool findVertex(int vertex) {
-            for (int i = 0; i < vertices.size(); i++) {
-                if (vertices[i]->getVertex() == vertex) {
-                    return true;
-                }
+            if (vertices[vertex]) {
+                return true;
             }
             return false;
         }
 
         void removeVertex(int vertex) {
-            for (int i = 0; i < vertices.size(); i++) {
-                if (vertices[i]->getVertex() == vertex && vertices[i]->virtualReg) {
-                    vertices[i]->removed = true;
-                    break;
-                }
+            if (vertices[vertex] && vertices[vertex]->virtualReg) {
+                vertices[vertex]->removed = true;
             }
         }
 
         Vertex *getVertex(int vertex) {
-            for (int i = 0; i < vertices.size(); i++) {
-                if (vertices[i]->getVertex() == vertex) {
-                    return vertices[i];
-                }
+            if (vertices[vertex]) {
+                return vertices[vertex];
             }
             return NULL;
         }
 
-        bool hasVirtualReg(){
-            for (int i = 0; i < vertices.size(); i++) {
-                if (vertices[i]->virtualReg && !vertices[i]->removed) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         int countEdge(int vertex) {
             int count = 0;
-            Vertex *v = getVertex(vertex);
+            Vertex *v = vertices[vertex];
             for (int i = 0; i < v->edges.size(); i++) {
                 Vertex *u = getVertex(v->edges[i]);
                 if (!u->removed) {
                     count++;
                 }
             }
+            v->countEdge = count;
             return count;
         }
 
         int countVirtualEdge(int vertex) {
             int count = 0;
-            Vertex *v = getVertex(vertex);
+            Vertex *v = vertices[vertex];
             for (int i = 0; i < v->edges.size(); i++) {
                 Vertex *u = getVertex(v->edges[i]);
                 if (!u->removed && u->virtualReg) {
@@ -140,37 +135,30 @@ class Graph {
             return count;
         }
 
-        Vertex *getVertexWithMinEdges() {
-            Vertex *v = NULL;
-            for (int i = 0; i < vertices.size(); i++) {
-                if (!vertices[i]->removed && vertices[i]->virtualReg) {
-                    if (v == NULL || countEdge(vertices[i]->vertex) < countEdge(v->vertex)) {
-                        v = vertices[i];
-                    }else if(countEdge(vertices[i]->vertex) == countEdge(v->vertex) && vertices[i]->vertex < v->vertex){
-                        v = vertices[i];
+        void setMaxMinVertex(){
+            for(auto v: vertices){
+                if(v.second->virtualReg && !v.second->removed){
+                    countEdge(v.first);
+                    //min
+                    if (min == nullptr || v.second->countEdge < min->countEdge) {
+                        min = v.second;
+                    }else if(v.second->countEdge == min->countEdge && v.second->vertex < min->vertex){
+                        min = v.second;
                     }
-                }
-            }
-            return v;
-        }
 
-        Vertex *getVertexWithMaxEdges(){
-            Vertex *v = NULL;
-            for (int i = 0; i < vertices.size(); i++) {
-                if (!vertices[i]->removed && vertices[i]->virtualReg) {
-                    if (v == NULL || countEdge(vertices[i]->vertex) > countEdge(v->vertex)) {
-                        v = vertices[i];
-                    }else if(countEdge(vertices[i]->vertex) == countEdge(v->vertex) && vertices[i]->vertex < v->vertex){
-                        v = vertices[i];
+                    //max
+                    if (max == nullptr || v.second->countEdge > max->countEdge) {
+                        max = v.second;
+                    }else if(v.second->countEdge == max->countEdge && v.second->vertex < max->vertex){
+                        max = v.second;
                     }
                 }
             }
-            return v;
         }
 
         void getColor(int vertex, int maxColor){
             std::vector<int> avaliableColors;
-            Vertex *v = getVertex(vertex);
+            Vertex *v = vertices[vertex];
 
             for(int i = 0; i <= maxColor; i++){
                 avaliableColors.push_back(i);
@@ -188,22 +176,21 @@ class Graph {
         }
      
         void resetVertexes() {
-           for( int i = 0; i < vertices.size(); i++) {
-                vertices[i]->color = -1;
-                vertices[i]->spill = false;
-                vertices[i]->removed = false;
-            }
+            auto iter = vertices.begin();
+            while (iter != vertices.end()) {
+                iter->second->color = -1;
+                iter->second->spill = false;
+                iter->second->removed = false;
+                ++iter;
+            }   
         }
 
         void destroyGraph() {
-            for (int i = 0; i < vertices.size(); i++) {
-                delete vertices[i];
+            auto iter = vertices.begin();
+            while (iter != vertices.end()) {
+                delete iter->second;
+                ++iter;
             }
-            vertices.clear();
-        }
-
-        std::vector<Vertex *> getVertices() {
-            return vertices;
         }
 
 };

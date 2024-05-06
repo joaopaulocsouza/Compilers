@@ -11,7 +11,7 @@
 
     extern int yylex();
     extern char* yytext;
-    void yyerror(char *s);
+    void yyerror(std::string s);
     void spillError();
     bool spill = false;
     Graph* graph = new Graph();
@@ -41,20 +41,22 @@
 
     Def: K EQUAL Value {graph->colors = $3;}
 
-    VirtualRegister: VirtualRegister EOL VirtualRegister
-                | Value ARROW Registers {
+    VirtualRegister: Interfence EOL VirtualRegister
+                | Interfence
+                
+    Interfence: Value ARROW Registers {
                         Vertex* v;
                         if(!graph->findVertex($1)){
                             v = new Vertex($1, graph->colors);
                         }else{
-                            v = graph->getVertex($1);
+                            v = graph->vertices[$1];
                         }
                         for(i = 0; i < interference.size(); i++){
                             if(!graph->findVertex(interference[i])){
                                 Vertex* z = new Vertex(interference[i], graph->colors);
                                 graph->addVertex(z);
                             }
-                            v->addEdge(interference[i], graph->getVertex(interference[i]));
+                            v->addEdge(interference[i], graph->vertices[interference[i]]);
                         }
                         interference.clear();
                         graph->addVertex(v);}
@@ -70,13 +72,8 @@
         }
 %%
 
-void yyerror(char *s) {
-    printf("Error: %s\n", s);
-}
-
-void spillError(){
-    std::cout << "Graph " << graph->G << " -> K = " << graph->colors << ": SPILL";
-    exit(0);
+void yyerror(std::string s) {
+    std::cout << "Error: " << s << std::endl;
 }
 
 int main(int argc, char **argv){
@@ -91,24 +88,27 @@ int main(int argc, char **argv){
         std::cout << "K = " << i << "\n" << std::endl;
 
         //Simplify
-        while(graph->hasVirtualReg()){
-            Vertex* v = graph->getVertexWithMinEdges();
-            if(graph->countEdge(v->vertex) < i){
-                std::cout << "Push: " << v->vertex << std::endl;
-                s.push(v);
-                graph->removeVertex(v->vertex);
+        while(graph->virtualRegs > 0){
+            graph->setMaxMinVertex();
+            if(graph->min->countEdge < i){
+                std::cout << "Push: " << graph->min->vertex << std::endl;
+                s.push(graph->min);
+                graph->removeVertex(graph->min->vertex);
             }else{
-                v = graph->getVertexWithMaxEdges();
-                std::cout << "Push: " << v->vertex << " *" << std::endl;
-                s.push(v);
-                graph->removeVertex(v->vertex);
+                std::cout << "Push: " << graph->max->vertex << " *" << std::endl;
+                s.push(graph->max);
+                graph->removeVertex(graph->max->vertex);
             }
+            graph->max = nullptr;
+            graph->min = nullptr;
+            graph->virtualRegs--;
         }
 
         //Select
         bool spill = false;
         while(s.size() > 0){
             Vertex *v = s.top();
+            graph->virtualRegs++;
             graph->addVertex(v);
             s.pop();
             graph->getColor(v->vertex, i-1);
@@ -125,6 +125,7 @@ int main(int argc, char **argv){
 
         if(spill){
             while(s.size() > 0){
+                graph->virtualRegs++;
                 graph->addVertex(s.top());
                 s.pop();
             }
