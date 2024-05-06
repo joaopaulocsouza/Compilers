@@ -23,10 +23,11 @@ class Register {
         Register(){};
 };
 
+std::vector<Register *> actives;
+std::map<int, bool> freeRegs;
+
 
 class LinearScan{
-    std::vector<Register *> actives;
-    std::map<int, bool> freeRegs;
 
     public:
         std::vector<Register *> registers;
@@ -57,6 +58,15 @@ class LinearScan{
             return -1;
         };
 
+        void adjustActives(int current){
+            for(auto ativo : actives){
+                if(ativo->end <= current){
+                    actives.erase(std::remove(actives.begin(), actives.end(), ativo), actives.end());
+                    freeRegs[ativo->reg] = false;
+                }
+            }   
+        };
+
         void alloc(int i){
             ResultProps result;
 
@@ -67,21 +77,8 @@ class LinearScan{
             for(int j = 0; j < registers.size(); j++){
                 Register* reg = registers[j];
 
-                for(auto ativo : actives){
-                    if(ativo->end <= reg->start){
-                        actives.erase(std::remove(actives.begin(), actives.end(), ativo), actives.end());
-                        freeRegs[ativo->reg] = false;
-                    }
-                }   
-
-                for(int k = 0; k < actives.size(); k++){
-                    Register* ativo = actives[k];
-                    if(ativo->end <= reg->start){
-                        actives.erase(std::remove(actives.begin(), actives.end(), ativo), actives.end());
-                        freeRegs[ativo->reg] = false;
-                    }
-                }
-
+                adjustActives(reg->start);
+                adjustActives(reg->start);
 
                 for(auto free : freeRegs){
                     if(free.second == false){
