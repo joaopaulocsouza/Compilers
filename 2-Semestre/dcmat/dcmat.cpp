@@ -23,7 +23,7 @@ std::vector<HashElement> hash[211];
 DCMAT::DCMAT(){}
 
 void DCMAT::ShowSettings(){
-    std::cout << "\nh_view_lo: " << std::fixed << std::setprecision(precision) << h_view_lo << "\nh_view_hi: " << h_view_hi;
+    std::cout << "\nh_view_lo: " << std::fixed << std::setprecision(6) << h_view_lo << "\nh_view_hi: " << h_view_hi;
     std::cout << "\nv_view_lo: " << v_view_lo << "\nv_view_hi: "  << v_view_hi;
     std::cout << "\nfloat precision: " << precision << "\nintegral_steps: " << integral_steps;
 
@@ -50,6 +50,13 @@ void DCMAT::CreateHashItem(char *name, Expressao *exp, int type){
     int ascii = 0;
     for(int i = 0; i < std::strlen(name);i++) ascii += int(name[i]);
     ascii = ascii % 211;
+
+    if(exp->left != nullptr) exp->DeleteExpression(exp->left);
+    if(exp->right != nullptr) exp->DeleteExpression(exp->right);
+    if(exp->exp != nullptr) exp->DeleteExpression(exp->exp);
+
+    exp->left, exp->right, exp->exp = nullptr;
+    exp->oper = OP;
 
     if(hash[ascii].size() > 0){
        for(int i = 0; i < hash[ascii].size(); i++){
@@ -85,6 +92,16 @@ DeclaredVar DCMAT::FindHashItem(char *name){
     result.exists = false;
     return result;
 };
+
+void DCMAT::DeleteHash(){
+
+    for(int i = 0; i < hash->size(); i++){
+        for(int j = 0; j < hash[i].size(); j++){
+            hash[i][j].value->DeleteExpression(hash[i][j].value);
+        }
+        hash[i].clear();
+    }
+}
 
 void DCMAT::ShowSymbols(){
     std::cout << "\n";
@@ -181,19 +198,20 @@ void DCMAT::ShowMatrix(MatrixClass *matrix){
                     result += 1;
                 }
             }else{
+                result += countDigits((int)matrix->matrix[i][j]) + precision;
+                if(precision > 0){
+                    result += 1;
+                }
                 isNegative[j] = true;
+                result +=1;
             }
+            if(j < matrix->columns-1) result+=1;
         }
         if(lineSize < result) lineSize = result;
-    }
-    lineSize -= 1;
-    for(int k = 0; k < matrix->columns; k++){
-        if(isNegative) lineSize += 1;
     }
 
     std::cout << "\n+-";
     for(int k = 0; k < lineSize; k++) std::cout << " ";
-    for(int i = 0; i < matrix->lines; i++) if(isNegative[i]) {std::cout << " ";};
     std::cout << "-+\n";
     
     for(int i = 0; i < matrix->lines; i++){
@@ -217,7 +235,6 @@ void DCMAT::ShowMatrix(MatrixClass *matrix){
 
     std::cout << "+-";
     for(int k = 0; k < lineSize; k++) std::cout << " ";
-    for(int i = 0; i < matrix->lines; i++) if(isNegative[i]) {std::cout << " ";};
     std::cout << "-+\n\n";
 };
 
@@ -281,10 +298,10 @@ float DCMAT::SolveDeterminant(MatrixClass *matrix){
 };
 
 void DCMAT::SolveLinearSystem(MatrixClass *matrix){
-    MatrixClass *newMatrix = new MatrixClass();
 
     std::vector<std::vector<float>> L(matrix->lines, std::vector<float>(matrix->lines, 0)), U;
     U = matrix->matrix;
+    float aux[matrix->lines];
 
     for (int i = 0; i < matrix->lines; ++i) {
         L[i][i] = 1;
@@ -293,6 +310,31 @@ void DCMAT::SolveLinearSystem(MatrixClass *matrix){
             L[j][i] = ratio;
             for (int k = i; k < matrix->lines+1; ++k) {
                 U[j][k] -= ratio * U[i][k];
+            }
+        }
+    }
+
+    for(int i=0; i < matrix->lines; i++) {
+        for(int j=i+1; j < matrix->lines; j++) {
+            for(int k= 0; k < matrix->lines; k++) {
+                if(fmod(matrix->matrix[i][k], matrix->matrix[j][k]) != 0 && fmod(matrix->matrix[j][k], matrix->matrix[i][k]) != 0) {
+                    break;
+                }
+                aux[k] = matrix->matrix[i][k] > matrix->matrix[j][k]?matrix->matrix[i][k]/matrix->matrix[j][k]:
+                 matrix->matrix[j][k]/matrix->matrix[i][k];
+            }
+
+            for(int k= 0; k < matrix->lines; k++) {
+                if(aux[k] != aux[0]) break;
+                if(k == matrix->lines-1 && (matrix->matrix[i][matrix->lines]/aux[0] == matrix->matrix[j][matrix->lines] ||
+                     matrix->matrix[j][matrix->lines]/aux[0] == matrix->matrix[i][matrix->lines])) {
+                    std::cout << "\nSPI - The Linear System has infinitely many solutions\n\n";
+                    return;
+                } else if(k == matrix->lines-1 && ( matrix->matrix[i][matrix->lines]/aux[0] !=  matrix->matrix[j][matrix->lines] && 
+                    matrix->matrix[j][matrix->lines]/aux[0] !=  matrix->matrix[i][matrix->lines])) {
+                    std::cout << "\nSI - The Linear System has no solution\n\n";
+                    return;
+                }
             }
         }
     }
@@ -308,8 +350,6 @@ void DCMAT::SolveLinearSystem(MatrixClass *matrix){
     }
 
     
-
-    
     std::vector<float> result(matrix->lines);
     for (int i = matrix->lines - 1; i >= 0; --i) {
         float sum = 0;
@@ -320,22 +360,11 @@ void DCMAT::SolveLinearSystem(MatrixClass *matrix){
     }
 
     int verify = 0;
-    bool hasNullLine = false;
 
     for (int i = 0; i < matrix->lines; ++i) {
         if (U[i][i] != 0) verify++;
     }
 
-    for (int i = 0; i < matrix->lines; i++){
-        hasNullLine = true;
-        for (int j = 0; j < matrix->lines; j++){
-            if(U[j][j] != 0){
-                hasNullLine = false;
-                break;
-            }
-            if(!hasNullLine) break;
-        }
-    }
 
     if(verify == matrix->lines){
         std::cout << "\nMatrix X:\n\n";
@@ -343,10 +372,6 @@ void DCMAT::SolveLinearSystem(MatrixClass *matrix){
             std::cout << std::fixed << std::setprecision(precision) << result[i] << std::endl;
         }
         std::cout << std::endl;
-    }else if(!hasNullLine){
-        std::cout << "\nSPI - The Linear System has infinitely many solutions\n\n";
-    }else{
-        std::cout << "\nSI - The Linear System has no solution\n\n";
     }
 
 };
@@ -360,6 +385,7 @@ void DCMAT::Integrate(float superior, float inferior, Expressao *exp){
     }
 
     std::cout << "\n" << std::fixed << std::setprecision(precision) << result << "\n\n";
+    exp->DeleteExpression(exp);
 };
 
 void DCMAT::Sum(float inferior, float superior, Expressao *exp){
@@ -368,11 +394,14 @@ void DCMAT::Sum(float inferior, float superior, Expressao *exp){
         result += exp->CalcFunctionValue(i, exp);
     };
     std::cout << "\n" << std::fixed << std::setprecision(precision) << result << "\n\n";
+    exp->DeleteExpression(exp);
 };
 
 void DCMAT::ReversePolishNotation(Expressao *exp){
-    if(exp->left != nullptr) ReversePolishNotation(exp->left);
-    if(exp->right != nullptr) ReversePolishNotation(exp->right);
+    if(exp->type != OP){
+        if(exp->left != nullptr) ReversePolishNotation(exp->left);
+        if(exp->right != nullptr) ReversePolishNotation(exp->right);
+    }
 
      switch (exp->oper) {
         case SUB_KEY:
@@ -409,8 +438,10 @@ void DCMAT::ReversePolishNotation(Expressao *exp){
                         std::cout << std::fixed << std::setprecision(precision) << exp->value << " ";
                         break;
                     } 
-                case ID_KEY:
+                case ID_KEY: case MATRIX_KEY:
                     std::cout << exp->id << " "; 
                 }
     }
+
+
 };

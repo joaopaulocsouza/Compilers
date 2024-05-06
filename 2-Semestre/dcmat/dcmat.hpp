@@ -16,6 +16,7 @@ class DCMAT {
         void ResetSettings();
         void CreateHashItem(char *name, Expressao *exp, int type);
         DeclaredVar FindHashItem(char *name);
+        void DeleteHash();
         void ShowSymbols();
         void PlotChart(Expressao *exp);
         void ShowMatrix(MatrixClass *matrix);

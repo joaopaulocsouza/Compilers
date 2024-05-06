@@ -31,7 +31,6 @@
 "about" return ABOUT;
 "abs" return ABS;
 "axis" return AXIS;
-"connect_dots" return CONNECT_DOTS;
 "cos" return COS;
 "determinant" return DETERMINANT;
 "erase" return ERASE;

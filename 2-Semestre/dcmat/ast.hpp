@@ -82,19 +82,19 @@ class Expressao {
 
             switch (aux->oper) {
                 case SUB_KEY:
-                    result = GetValue(x, aux->left) - result;
+                    result = CalcFunctionValue(x, aux->left) - result;
                     break;  
                 case ADD_KEY:
-                    result = GetValue(x, aux->left) + result;
+                    result = CalcFunctionValue(x, aux->left) + result;
                     break;
                 case DIV_KEY:
-                    result = GetValue(x, aux->left) / result;
+                    result = CalcFunctionValue(x, aux->left) / result;
                     break;
                 case MULTIPLY_KEY:
-                    result = GetValue(x, aux->left) * result;
+                    result = CalcFunctionValue(x, aux->left) * result;
                     break;
                 case POW_KEY:
-                    result = pow(GetValue(x, aux->left), result);
+                    result = pow(CalcFunctionValue(x, aux->left), result);
                     break;
                 case SEN_KEY:
                     result = sin(CalcFunctionValue(x, aux->exp));
@@ -133,6 +133,16 @@ class Expressao {
             new_exp->oper = oper; 
             new_exp->left = termo; 
             new_exp->right = exp;
+            new_exp->exp = nullptr;
+
+            if(termo->element == FUNCTION_KEY || exp->element == FUNCTION_KEY){ 
+                new_exp->element = FUNCTION_KEY;
+            }else{
+                new_exp->element = EXPRESSION_KEY;
+            };
+
+            if(termo->type == ID_KEY || exp->type == ID_KEY) return new_exp;
+
             if(termo->type == MATRIX_KEY || exp->type == MATRIX_KEY){
                 if(termo->type == ID_KEY || exp->type == ID_KEY) return nullptr;
                 switch (oper) {
@@ -234,6 +244,7 @@ class Expressao {
                 }
             }else if(termo->type == FLOAT_KEY ||termo->type == INT_KEY ||
                 exp->type == FLOAT_KEY ||exp->type == INT_KEY ){
+                delete new_matrix;
                 switch (oper) {
                     case ADD_KEY:
                         new_exp->value = termo->value + exp->value;
@@ -254,12 +265,6 @@ class Expressao {
                         new_exp->value = pow(termo->value, exp->value);
                         break;
                 }
-            };
-
-            if(termo->element == FUNCTION_KEY || exp->element == FUNCTION_KEY){ 
-                new_exp->element = FUNCTION_KEY;
-            }else{
-                new_exp->element = EXPRESSION_KEY;
             };
 
             return new_exp;
@@ -292,10 +297,24 @@ class Expressao {
             new_exp->left = nullptr;
             new_exp->right = nullptr;
             new_exp->exp = nullptr;
+            new_exp->id = "NULL";
             new_exp->matrix = matrix;
             new_exp->element = EXPRESSION_KEY; 
+            new_exp->oper = OP;
 
             return new_exp;
+        }
+
+        void DeleteExpression(Expressao *exp){
+            if(exp == nullptr) return;
+
+            if(exp->exp != nullptr)DeleteExpression(exp->exp);
+            if(exp->left != nullptr)DeleteExpression(exp->left);
+            if(exp->right != nullptr)DeleteExpression(exp->right);
+
+            
+            delete exp;
+            exp = nullptr;
         }
 };
 

@@ -21,6 +21,8 @@
 
     float euler = 2.71828182;
     float pi = 3.14159265;
+    int i = 0;
+    int j = 0;
 
     bool hasError = false;
     bool hasUndeclared = false;
@@ -102,7 +104,6 @@
 %token <floatValue>REAL;
 %token <stringValue>IDENTIFIER;
 %token EOL;
-%token IGNORE;
 
 %type <integerValue>NumInt;
 %type <floatValue>NumFloat;
@@ -140,10 +141,10 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     | RESET SETTINGS SEMICOLON {dcmat.ResetSettings();}
     | ABOUT SEMICOLON {
         printf("\n+----------------------------------------------+\n");
-        printf("|"); for(int i = 0; i < 46; i++) {printf(" ");}; printf("|\n");
-        printf("|"); for(int i = 0; i < 17; i++) {printf(" ");};  printf("201800560120"); for(int i = 0; i < 17; i++) {printf(" ");}; printf("|\n");
-        printf("|"); for(int i = 0; i < 9; i++) {printf(" ");};  printf("João Paulo Cardoso de Souza"); for(int i = 0; i < 10; i++) {printf(" ");}; printf("|\n");
-        printf("|"); for(int i = 0; i < 46; i++) {printf(" ");}; printf("|\n");
+        printf("|"); for(i = 0; i < 46; i++) {printf(" ");}; printf("|\n");
+        printf("|"); for(i = 0; i < 17; i++) {printf(" ");};  printf("201800560120"); for(i = 0; i < 17; i++) {printf(" ");}; printf("|\n");
+        printf("|"); for(i = 0; i < 9; i++) {printf(" ");};  printf("João Paulo Cardoso de Souza"); for(i = 0; i < 10; i++) {printf(" ");}; printf("|\n");
+        printf("|"); for(i = 0; i < 46; i++) {printf(" ");}; printf("|\n");
         printf("+----------------------------------------------+\n\n");
     }
     | SET Set;
@@ -243,11 +244,9 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
         if(!stopPrint){
             if(hasUndeclared){
                 PrintUndeclareds();
-            }else if($3->element == FUNCTION_KEY){
+            }else{
                 function = $3;
                 dcmat.PlotChart(function);
-            }else{
-                std::cout << "\nNo Function defined!\n\n";
             }
         }
     };
@@ -269,7 +268,7 @@ Command: SHOW SYMBOLS SEMICOLON {dcmat.ShowSymbols();}
     }
     | SUM L_PAREN IDENTIFIER COMMA Limit COLON Limit COMMA Expressao R_PAREN SEMICOLON {
          if(hasUndeclared){
-            for(int i = 0; i < undeclared->vetor.size(); i++){
+            for(i = 0; i < undeclared->vetor.size(); i++){
                 if(undeclared->vetor[i] == $3){
                     undeclared->vetor.erase(undeclared->vetor.begin() + i);
                 }
@@ -288,14 +287,19 @@ Matrix: L_SQUARE_BRACKET MatrixLine MatrixColum R_SQUARE_BRACKET
     {
         $2->matrix.push_back($2->line);
         if($3 != nullptr){
-            for(int i = 0; i < $3->matrix.size(); i++){
+            for(i = 0; i < $3->matrix.size(); i++){
                 $2->matrix.push_back($3->matrix[i]);
-            }
+            } 
         }
         $2->lines = $2->matrix.size();
         $2->columns = $2->matrix[0].size();
-        for(int i = 0; i < $2->matrix.size(); i++){
+        for(i = 0; i < $2->matrix.size(); i++){
             if($2->columns < $2->matrix[i].size()) $2->columns = $2->matrix[i].size();
+        }
+        for(i = 0; i < $2->lines; i++){
+            if($2->columns > $2->matrix[i].size()){
+                for(j = $2->matrix[i].size()-1; j < $2->columns; j++) $2->matrix[i].push_back(0);
+            }
         }
         $$ = $2;
     };
@@ -317,7 +321,7 @@ MatrixLine: L_SQUARE_BRACKET Limit MatrixValue R_SQUARE_BRACKET {
         MatrixClass *line = new MatrixClass();
         line->line.push_back($2);
         if($3 != nullptr){
-            for(int i = 0; i < $3->line.size(); i++){
+            for(i = 0; i < $3->line.size(); i++){
                 line->line.push_back($3->line[i]);
             }
         }
@@ -407,8 +411,8 @@ Signal: Termo {$$ = $1;};
         | SUBTRACT Termo {
             if($2->type == MATRIX_KEY){
                 Expressao *exp = expressao.CreateMatrix($2->matrix);
-                for(int i = 0; i < exp->matrix->lines; i++){
-                    for(int j = 0; j < exp->matrix->columns; j++){
+                for(i = 0; i < exp->matrix->lines; i++){
+                    for(j = 0; j < exp->matrix->columns; j++){
                         exp->matrix->matrix[i][j] *= -1; 
                     }
                 }
@@ -419,7 +423,7 @@ Signal: Termo {$$ = $1;};
                         $2->type = SUBVAR_KEY;
                         break;
                     default:
-                        if($2->element != FUNCTION_KEY) $2->value = -$2->value;
+                        if($2->element != FUNCTION_KEY && $2->type != ID_KEY) $2->value = -$2->value;
                         break;
                 }
                 $$ = $2;
@@ -430,13 +434,16 @@ Termo: IDENTIFIER {
             result = dcmat.FindHashItem($1);
             if(result.exists){
                 result.value->id = $1;
-               $$ = result.value;
+                Expressao *exp = result.value->type != MATRIX_KEY?
+                    expressao.CreateSheet(result.value->type, OP, result.value->value, result.value->exp, EXPRESSION_KEY, $1):expressao.CreateMatrix(result.value->matrix);
+                exp->id = $1;
+                $$ = exp;
             }else{
                 Expressao *exp = expressao.CreateSheet(ID_KEY, OP, 0, nullptr, EXPRESSION_KEY, $1);
                 $$ = exp;
                 hasUndeclared = true;
                 bool test = false;
-                for(int i = 0; i < undeclared->vetor.size(); i++){ 
+                for(i = 0; i < undeclared->vetor.size(); i++){ 
                     if(undeclared->vetor[i] == $1){
                         test = true;
                         break;
@@ -542,7 +549,7 @@ void yyerror(const void *s) {
 
 void PrintUndeclareds(){
     std::cout << "\n";
-    for(int i = 0; i < undeclared->vetor.size(); i++){
+    for(i = 0; i < undeclared->vetor.size(); i++){
         std::cout << "Undefined symbol [" << undeclared->vetor[i] << "]\n";
     }
     std::cout << "\n";
@@ -552,6 +559,7 @@ void PrintUndeclareds(){
 void clearMemory(){
     if(matrix != nullptr) delete matrix;
     delete undeclared;
+    dcmat.DeleteHash();
 }
 
 int main(int argc, char **argv) {
