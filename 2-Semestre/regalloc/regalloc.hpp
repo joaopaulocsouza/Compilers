@@ -73,6 +73,7 @@ class Graph {
         Graph() {
             this->G = 0;
             this->colors = 0;
+            this->virtualRegs = 0;
             this->max = nullptr;
             this->min = nullptr;
         }
