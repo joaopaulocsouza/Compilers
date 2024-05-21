@@ -1,6 +1,9 @@
 #ifndef LINEARSCAN_HPP
 #define LINEARSCAN_HPP
 
+
+#pragma once
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -23,9 +26,9 @@ class Register {
         Register(){};
 };
 
+
 std::vector<Register *> actives;
 std::map<int, bool> freeRegs;
-
 
 class LinearScan{
 
@@ -34,7 +37,9 @@ class LinearScan{
         std::vector<ResultProps> results;
         int k;
 
-        LinearScan(){};
+        LinearScan(){
+            k = 0;
+        };
 
         void setK(int k){
             this->k = k;
